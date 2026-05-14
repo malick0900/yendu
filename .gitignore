@@ -1,0 +1,47 @@
+# OS
+.DS_Store
+*.swp
+*~
+
+# Editors
+.vscode/
+.idea/
+.claude/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+venv/
+.venv/
+env/
+
+# Node / build artifacts
+node_modules/
+build/
+dist/
+.cache/
+
+# Env files (NEVER commit secrets)
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test reports / temp
+test_reports/
+test_result.md
+auth_testing.md
+
+# Misc
+*.pid

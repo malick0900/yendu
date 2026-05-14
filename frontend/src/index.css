@@ -1,0 +1,170 @@
+@import url('https://fonts.googleapis.com/css2?family=Gloock&family=Manrope:wght@400;500;600;700&family=Azeret+Mono:wght@400;600&display=swap');
+@import 'leaflet/dist/leaflet.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --font-display: 'Gloock', ui-serif, Georgia, serif;
+    --font-body: 'Manrope', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --font-mono: 'Azeret Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+@layer base {
+    :root {
+        --background: 36 56% 97%;
+        --foreground: 20 8% 8%;
+
+        --card: 0 0% 100%;
+        --card-foreground: 20 8% 8%;
+
+        --popover: 0 0% 100%;
+        --popover-foreground: 20 8% 8%;
+
+        --primary: 12 52% 53%;
+        --primary-foreground: 0 0% 100%;
+
+        --secondary: 160 60% 15%;
+        --secondary-foreground: 0 0% 98%;
+
+        --muted: 36 35% 92%;
+        --muted-foreground: 20 6% 35%;
+
+        --accent: 174 54% 35%;
+        --accent-foreground: 0 0% 100%;
+
+        --destructive: 10 61% 47%;
+        --destructive-foreground: 0 0% 98%;
+
+        --border: 32 22% 84%;
+        --input: 32 22% 84%;
+        --ring: 12 52% 53%;
+
+        --premium: 42 55% 60%;
+
+        --chart-1: 12 52% 53%;
+        --chart-2: 160 60% 25%;
+        --chart-3: 174 54% 35%;
+        --chart-4: 42 55% 60%;
+        --chart-5: 35 72% 42%;
+
+        --radius: 14px;
+    }
+
+    .dark {
+        --background: 20 8% 8%;
+        --foreground: 36 56% 97%;
+        --card: 20 8% 10%;
+        --card-foreground: 36 56% 97%;
+        --popover: 20 8% 10%;
+        --popover-foreground: 36 56% 97%;
+        --primary: 12 52% 58%;
+        --primary-foreground: 20 8% 8%;
+        --secondary: 160 45% 22%;
+        --secondary-foreground: 0 0% 98%;
+        --muted: 20 6% 16%;
+        --muted-foreground: 36 10% 75%;
+        --accent: 174 54% 40%;
+        --accent-foreground: 20 8% 8%;
+        --destructive: 10 61% 55%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 20 6% 22%;
+        --input: 20 6% 22%;
+        --ring: 42 55% 60%;
+        --premium: 42 55% 60%;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+    html, body {
+        height: 100%;
+    }
+    body {
+        @apply bg-background text-foreground;
+        font-family: var(--font-body);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+    h1, h2, .font-display {
+        font-family: var(--font-display);
+        letter-spacing: -0.01em;
+    }
+    .font-mono {
+        font-family: var(--font-mono);
+    }
+}
+
+/* Subtle noise overlay for premium surfaces */
+.noise-overlay {
+    position: relative;
+}
+.noise-overlay::before {
+    content: '';
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+    mix-blend-mode: multiply;
+    opacity: 0.35;
+    border-radius: inherit;
+}
+
+/* Hero overlay gradient */
+.hero-overlay::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(20,19,18,0.55) 0%, rgba(20,19,18,0.15) 45%, rgba(251,247,240,0.00) 100%);
+    pointer-events: none;
+}
+
+.section-warm-wash {
+    background:
+        radial-gradient(1200px 600px at 20% 0%, rgba(200,107,74,0.10) 0%, rgba(200,107,74,0.00) 60%),
+        radial-gradient(900px 500px at 80% 10%, rgba(42,140,138,0.08) 0%, rgba(42,140,138,0.00) 55%);
+}
+
+/* Leaflet price marker */
+.ts-marker {
+    background: #fff;
+    border: 1px solid #E9D8C2;
+    border-radius: 999px;
+    padding: 6px 10px;
+    box-shadow: 0 10px 30px rgba(20,19,18,0.12);
+    font: 600 12px var(--font-body);
+    color: #1E2320;
+    white-space: nowrap;
+}
+.ts-marker--active {
+    border-color: #C86B4A;
+    box-shadow: 0 18px 50px rgba(20,19,18,0.18);
+    transform: scale(1.05);
+}
+.ts-marker__dot {
+    display: inline-block;
+    width: 6px; height: 6px; border-radius: 999px;
+    background: #D6B25E;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+.leaflet-container { font-family: var(--font-body); }
+.leaflet-div-icon { background: transparent; border: 0; }
+
+.scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+
+@layer base {
+    [data-debug-wrapper="true"] { display: contents !important; }
+    [data-debug-wrapper="true"] > * {
+        margin-left: inherit; margin-right: inherit; margin-top: inherit; margin-bottom: inherit;
+        padding-left: inherit; padding-right: inherit; padding-top: inherit; padding-bottom: inherit;
+        column-gap: inherit; row-gap: inherit; gap: inherit;
+        border-left-width: inherit; border-right-width: inherit; border-top-width: inherit; border-bottom-width: inherit;
+        border-left-style: inherit; border-right-style: inherit; border-top-style: inherit; border-bottom-style: inherit;
+        border-left-color: inherit; border-right-color: inherit; border-top-color: inherit; border-bottom-color: inherit;
+    }
+}
