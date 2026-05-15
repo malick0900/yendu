@@ -1,4 +1,5 @@
 import os
+import certifi
 from motor.motor_asyncio import AsyncIOMotorClient
 from dotenv import load_dotenv
 from pathlib import Path
@@ -9,7 +10,10 @@ load_dotenv(ROOT_DIR / ".env")
 mongo_url = os.environ["MONGO_URL"]
 db_name = os.environ.get("DB_NAME", "teranga_stay")
 
-client = AsyncIOMotorClient(mongo_url)
+# Force certifi's CA bundle — some container base images (Railway/Nixpacks)
+# ship outdated system CAs that cause Atlas TLS handshakes to fail with
+# TLSV1_ALERT_INTERNAL_ERROR. Safe and recommended for Atlas SRV connections.
+client = AsyncIOMotorClient(mongo_url, tlsCAFile=certifi.where())
 db = client[db_name]
 
 
