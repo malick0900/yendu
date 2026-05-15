@@ -26,7 +26,15 @@ socket.getaddrinfo = _ipv4_only_getaddrinfo
 mongo_url = os.environ["MONGO_URL"]
 db_name = os.environ.get("DB_NAME", "teranga_stay")
 
-client = AsyncIOMotorClient(mongo_url, tlsCAFile=certifi.where())
+# Atlas SRV URLs imply TLS — pin certifi's CA bundle to avoid system-CA
+# issues in minimal containers. Plain `mongodb://` URLs (Railway internal,
+# local dev) do NOT use TLS, so we must skip tlsCAFile or pymongo enables
+# TLS implicitly and the handshake fails against a plaintext server.
+_client_kwargs = {}
+if mongo_url.startswith("mongodb+srv://") or "tls=true" in mongo_url or "ssl=true" in mongo_url:
+    _client_kwargs["tlsCAFile"] = certifi.where()
+
+client = AsyncIOMotorClient(mongo_url, **_client_kwargs)
 db = client[db_name]
 
 
