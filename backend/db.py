@@ -1,4 +1,5 @@
 import os
+import socket
 import certifi
 from motor.motor_asyncio import AsyncIOMotorClient
 from dotenv import load_dotenv
@@ -7,12 +8,24 @@ from pathlib import Path
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
 
+# Atlas M0 free clusters DO NOT accept IPv6 connections. Railway containers
+# default to IPv6 outbound, which causes pymongo to fail the TLS handshake
+# with TLSV1_ALERT_INTERNAL_ERROR (Atlas's L7 proxy aborts non-IPv4 sessions).
+# Patch getaddrinfo to force IPv4-only lookups. No-op effect on localhost dev.
+_orig_getaddrinfo = socket.getaddrinfo
+
+
+def _ipv4_only_getaddrinfo(*args, **kwargs):
+    results = _orig_getaddrinfo(*args, **kwargs)
+    ipv4 = [r for r in results if r[0] == socket.AF_INET]
+    return ipv4 or results  # fall back to any if no IPv4 (e.g. localhost ::1)
+
+
+socket.getaddrinfo = _ipv4_only_getaddrinfo
+
 mongo_url = os.environ["MONGO_URL"]
 db_name = os.environ.get("DB_NAME", "teranga_stay")
 
-# Force certifi's CA bundle — some container base images (Railway/Nixpacks)
-# ship outdated system CAs that cause Atlas TLS handshakes to fail with
-# TLSV1_ALERT_INTERNAL_ERROR. Safe and recommended for Atlas SRV connections.
 client = AsyncIOMotorClient(mongo_url, tlsCAFile=certifi.where())
 db = client[db_name]
 
