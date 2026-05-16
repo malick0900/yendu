@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api, formatXOF, formatDateFR } from '@/lib/api';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Calendar } from '@/components/ui/calendar';
@@ -62,8 +63,31 @@ const StayDetailPage = () => {
     });
   }, [user, id]);
 
+  const [promoInput, setPromoInput] = useState('');
+  const [promo, setPromo] = useState(null); // { code, discount_percent }
+  const [promoChecking, setPromoChecking] = useState(false);
+
   const nights = range.from && range.to ? Math.max(differenceInCalendarDays(range.to, range.from), 1) : 0;
-  const total = nights * (item?.price_per_night || 0);
+  const gross = nights * (item?.price_per_night || 0);
+  const discount = promo ? Math.floor((gross * promo.discount_percent) / 100) : 0;
+  const total = gross - discount;
+
+  const applyPromo = async () => {
+    const code = promoInput.trim().toUpperCase();
+    if (!code) return;
+    setPromoChecking(true);
+    try {
+      const { data } = await api.post('/promo-codes/validate', { code });
+      setPromo(data);
+      setPromoInput(data.code);
+      toast.success(`-${data.discount_percent}% appliqué`);
+    } catch (e) {
+      setPromo(null);
+      toast.error(e?.response?.data?.detail || 'Code invalide');
+    } finally { setPromoChecking(false); }
+  };
+
+  const removePromo = () => { setPromo(null); setPromoInput(''); };
 
   const reserve = async () => {
     if (!user) { navigate('/login?next=/stays/' + id); return; }
@@ -75,6 +99,7 @@ const StayDetailPage = () => {
         check_in: range.from.toISOString().slice(0, 10),
         check_out: range.to.toISOString().slice(0, 10),
         guests: Number(guests), participants: Number(guests),
+        promo_code: promo?.code || null,
       });
       toast.success('Réservation créée ! Notre équipe la confirmera sous peu.');
       navigate('/dashboard');
@@ -206,14 +231,30 @@ const StayDetailPage = () => {
                 <SelectContent>{[...Array(item.max_guests).keys()].map((n) => (<SelectItem key={n+1} value={String(n+1)}>{n+1} voyageur{n+1 > 1 ? 's' : ''}</SelectItem>))}</SelectContent>
               </Select>
             </div>
-            <Button onClick={reserve} disabled={booking} className="w-full mt-4 h-12 rounded-xl bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/90 text-base" data-testid="booking-reserve-button">
+            <div className="mt-3">
+              {promo ? (
+                <div className="flex items-center justify-between rounded-xl bg-[hsl(var(--primary))]/10 px-3 py-2 text-sm" data-testid="booking-promo-applied">
+                  <span><strong className="font-mono">{promo.code}</strong> · -{promo.discount_percent}% appliqué</span>
+                  <button onClick={removePromo} className="text-xs text-muted-foreground hover:text-foreground underline">Retirer</button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <Input placeholder="Code promo (optionnel)" value={promoInput} onChange={(e) => setPromoInput(e.target.value.toUpperCase())} className="h-11 rounded-xl uppercase" data-testid="booking-promo-input" />
+                  <Button type="button" variant="outline" onClick={applyPromo} disabled={promoChecking || !promoInput.trim()} data-testid="booking-promo-apply" className="h-11 rounded-xl">{promoChecking ? '…' : 'Appliquer'}</Button>
+                </div>
+              )}
+            </div>
+            <Button onClick={reserve} disabled={booking} className="w-full mt-3 h-12 rounded-xl bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/90 text-base" data-testid="booking-reserve-button">
               {booking ? 'Réservation…' : 'Réserver'}
             </Button>
             {nights > 0 && (
               <div className="mt-5 text-sm space-y-2">
-                <div className="flex justify-between"><span>{formatXOF(item.price_per_night)} x {nights} nuit{nights > 1 ? 's' : ''}</span><span>{formatXOF(total)}</span></div>
+                <div className="flex justify-between"><span>{formatXOF(item.price_per_night)} x {nights} nuit{nights > 1 ? 's' : ''}</span><span>{formatXOF(gross)}</span></div>
+                {discount > 0 && (
+                  <div className="flex justify-between text-[hsl(var(--primary))]"><span>Code {promo.code}</span><span>−{formatXOF(discount)}</span></div>
+                )}
                 <div className="flex justify-between pt-2 border-t border-border font-semibold text-base"><span>Total</span><span>{formatXOF(total)}</span></div>
-                <p className="text-xs text-muted-foreground pt-2">Paiement manuel — confirmation par l’équipe Yendu.</p>
+                <p className="text-xs text-muted-foreground pt-2">Paiement manuel — confirmation par l'équipe Yendu.</p>
               </div>
             )}
           </div>

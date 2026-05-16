@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, HTTPException, Request
 from datetime import datetime, timezone, timedelta
 from typing import List, Dict
+import uuid
 
 from db import db
 from auth_utils import require_admin, serialize_doc
+from models import PromoCodeCreate, PromoCodeUpdate
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -138,3 +140,59 @@ async def update_user_role(user_id: str, payload: dict, request: Request):
         await db.users.update_one({"user_id": user_id}, {"$set": update})
     item = await db.users.find_one({"user_id": user_id}, {"_id": 0, "password_hash": 0})
     return serialize_doc(item)
+
+
+# ---------- Promo Codes ----------
+@router.get("/promo-codes")
+async def list_promo_codes(request: Request):
+    await require_admin(request, db)
+    items = await db.promo_codes.find({}, {"_id": 0}).sort("created_at", -1).to_list(500)
+    return [serialize_doc(i) for i in items]
+
+
+@router.post("/promo-codes")
+async def create_promo_code(payload: PromoCodeCreate, request: Request):
+    await require_admin(request, db)
+    code = payload.code.strip().upper()
+    if not code:
+        raise HTTPException(status_code=400, detail="Code requis")
+    if not (1 <= payload.discount_percent <= 100):
+        raise HTTPException(status_code=400, detail="La remise doit être entre 1 et 100%")
+    existing = await db.promo_codes.find_one({"code": code})
+    if existing:
+        raise HTTPException(status_code=409, detail="Ce code existe déjà")
+    doc = {
+        "id": uuid.uuid4().hex[:16],
+        "code": code,
+        "discount_percent": payload.discount_percent,
+        "valid_until": payload.valid_until,
+        "is_active": payload.is_active,
+        "used_count": 0,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.promo_codes.insert_one(doc)
+    doc.pop("_id", None)
+    return serialize_doc(doc)
+
+
+@router.patch("/promo-codes/{promo_id}")
+async def update_promo_code(promo_id: str, payload: PromoCodeUpdate, request: Request):
+    await require_admin(request, db)
+    update = {k: v for k, v in payload.model_dump(exclude_unset=True).items() if v is not None}
+    if "discount_percent" in update and not (1 <= update["discount_percent"] <= 100):
+        raise HTTPException(status_code=400, detail="La remise doit être entre 1 et 100%")
+    if update:
+        await db.promo_codes.update_one({"id": promo_id}, {"$set": update})
+    item = await db.promo_codes.find_one({"id": promo_id}, {"_id": 0})
+    if not item:
+        raise HTTPException(status_code=404, detail="Code promo introuvable")
+    return serialize_doc(item)
+
+
+@router.delete("/promo-codes/{promo_id}")
+async def delete_promo_code(promo_id: str, request: Request):
+    await require_admin(request, db)
+    res = await db.promo_codes.delete_one({"id": promo_id})
+    if res.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Code promo introuvable")
+    return {"ok": True}

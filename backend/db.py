@@ -56,3 +56,5 @@ async def ensure_indexes():
     await db.reviews.create_index([("type", 1), ("target_id", 1)])
     await db.favorites.create_index("id", unique=True)
     await db.favorites.create_index([("user_id", 1), ("type", 1), ("target_id", 1)], unique=True)
+    await db.promo_codes.create_index("code", unique=True)
+    await db.promo_codes.create_index("id", unique=True)

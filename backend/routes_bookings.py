@@ -7,6 +7,7 @@ from models import (
     BookingCreate, Booking, BookingStatusUpdate,
     ReviewCreate, Review,
     FavoriteCreate, Favorite,
+    PromoValidateRequest,
 )
 from auth_utils import get_current_user, require_admin, serialize_doc
 from routes_site import enqueue_notification, _log_admin
@@ -24,6 +25,34 @@ def _ranges_overlap(a_start: str, a_end: str, b_start: str, b_end: str) -> bool:
         return _parse_date(a_start) < _parse_date(b_end) and _parse_date(b_start) < _parse_date(a_end)
     except Exception:
         return False
+
+
+async def _resolve_promo(code: Optional[str]) -> tuple[Optional[dict], int]:
+    """Returns (promo_doc, discount_percent). discount_percent=0 means no valid promo."""
+    if not code:
+        return None, 0
+    normalized = code.strip().upper()
+    if not normalized:
+        return None, 0
+    doc = await db.promo_codes.find_one({"code": normalized}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=400, detail="Code promo invalide")
+    if not doc.get("is_active", True):
+        raise HTTPException(status_code=400, detail="Ce code promo est désactivé")
+    try:
+        if datetime.fromisoformat(doc["valid_until"]) < datetime.now(timezone.utc).replace(tzinfo=None):
+            raise HTTPException(status_code=400, detail="Ce code promo a expiré")
+    except HTTPException:
+        raise
+    except Exception:
+        pass  # malformed date stored — skip date check rather than block
+    return doc, int(doc.get("discount_percent", 0))
+
+
+@router.post("/promo-codes/validate")
+async def validate_promo(payload: PromoValidateRequest):
+    doc, percent = await _resolve_promo(payload.code)
+    return {"valid": True, "code": doc["code"], "discount_percent": percent}
 
 
 async def _ensure_property_available(prop_id: str, check_in: str, check_out: str):
@@ -80,6 +109,12 @@ async def create_booking(payload: BookingCreate, request: Request):
     else:
         raise HTTPException(status_code=400, detail="Type de réservation invalide")
 
+    # Apply promo code (raises 400 if invalid/expired/disabled)
+    promo_doc, promo_percent = await _resolve_promo(payload.promo_code)
+    gross = total
+    discount_amount = (gross * promo_percent) // 100
+    total = gross - discount_amount
+
     booking = Booking(
         type=payload.type,
         target_id=payload.target_id,
@@ -97,11 +132,16 @@ async def create_booking(payload: BookingCreate, request: Request):
         nights=nights,
         unit_price=unit_price,
         total_price=total,
+        promo_code=promo_doc["code"] if promo_doc else None,
+        discount_percent=promo_percent,
+        discount_amount=discount_amount,
     )
     doc = booking.model_dump()
     doc["created_at"] = doc["created_at"].isoformat()
     await db.bookings.insert_one(doc)
     doc.pop("_id", None)  # Remove MongoDB ObjectId
+    if promo_doc:
+        await db.promo_codes.update_one({"id": promo_doc["id"]}, {"$inc": {"used_count": 1}})
     # Notify
     html = f"""
     <h2>Merci pour votre réservation, {user.get('name')} !</h2>

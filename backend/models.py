@@ -212,7 +212,7 @@ class BookingBase(BaseModel):
 
 
 class BookingCreate(BookingBase):
-    pass
+    promo_code: Optional[str] = None
 
 
 class BookingStatusUpdate(BaseModel):
@@ -230,10 +230,42 @@ class Booking(BookingBase):
     target_image: Optional[str] = None
     nights: int = 0
     unit_price: int = 0
-    total_price: int = 0
+    total_price: int = 0  # final price after discount
+    promo_code: Optional[str] = None
+    discount_percent: int = 0
+    discount_amount: int = 0  # FCFA deducted; gross = total_price + discount_amount
     status: str = "pending"  # pending | confirmed | cancelled | completed
     payment_status: str = "pending"  # pending | paid | refunded
     created_at: datetime = Field(default_factory=_now)
+
+
+# ---------- Promo Codes ----------
+class PromoCodeCreate(BaseModel):
+    code: str
+    discount_percent: int  # 1-100
+    valid_until: str  # ISO date YYYY-MM-DD
+    is_active: bool = True
+
+
+class PromoCodeUpdate(BaseModel):
+    discount_percent: Optional[int] = None
+    valid_until: Optional[str] = None
+    is_active: Optional[bool] = None
+
+
+class PromoCode(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=_id)
+    code: str  # stored uppercase
+    discount_percent: int
+    valid_until: str
+    is_active: bool = True
+    used_count: int = 0
+    created_at: datetime = Field(default_factory=_now)
+
+
+class PromoValidateRequest(BaseModel):
+    code: str
 
 
 # ---------- Reviews ----------

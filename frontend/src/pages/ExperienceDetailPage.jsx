@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api, formatXOF, formatDateFR, EXPERIENCE_CATEGORIES } from '@/lib/api';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -26,6 +27,9 @@ const ExperienceDetailPage = () => {
   const [participants, setParticipants] = useState('1');
   const [booking, setBooking] = useState(false);
   const [favored, setFavored] = useState(false);
+  const [promoInput, setPromoInput] = useState('');
+  const [promo, setPromo] = useState(null);
+  const [promoChecking, setPromoChecking] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -38,6 +42,20 @@ const ExperienceDetailPage = () => {
     api.get('/favorites/me').then((r) => setFavored(r.data.some((f) => f.type === 'experience' && f.target_id === id)));
   }, [user, id]);
 
+  const applyPromo = async () => {
+    const code = promoInput.trim().toUpperCase();
+    if (!code) return;
+    setPromoChecking(true);
+    try {
+      const { data } = await api.post('/promo-codes/validate', { code });
+      setPromo(data);
+      setPromoInput(data.code);
+      toast.success(`-${data.discount_percent}% appliqué`);
+    } catch (e) { setPromo(null); toast.error(e?.response?.data?.detail || 'Code invalide'); }
+    finally { setPromoChecking(false); }
+  };
+  const removePromo = () => { setPromo(null); setPromoInput(''); };
+
   const reserve = async () => {
     if (!user) { navigate('/login'); return; }
     if (!date) { toast.error('Choisissez une date'); return; }
@@ -47,6 +65,7 @@ const ExperienceDetailPage = () => {
         type: 'experience', target_id: id,
         experience_date: date.toISOString().slice(0, 10),
         participants: Number(participants), guests: Number(participants),
+        promo_code: promo?.code || null,
       });
       toast.success('Réservation créée ! Notre équipe la confirmera sous peu.');
       navigate('/dashboard');
@@ -62,7 +81,9 @@ const ExperienceDetailPage = () => {
 
   if (loading || !item) return <div className="max-w-6xl mx-auto px-4 py-8"><Skeleton className="h-80 w-full rounded-3xl" /></div>;
   const cat = EXPERIENCE_CATEGORIES.find((c) => c.value === item.category);
-  const total = (item.price || 0) * Number(participants);
+  const gross = (item.price || 0) * Number(participants);
+  const discount = promo ? Math.floor((gross * promo.discount_percent) / 100) : 0;
+  const total = gross - discount;
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -141,11 +162,27 @@ const ExperienceDetailPage = () => {
                 <SelectContent>{[...Array(item.max_participants).keys()].map((n) => (<SelectItem key={n+1} value={String(n+1)}>{n+1} participant{n+1 > 1 ? 's' : ''}</SelectItem>))}</SelectContent>
               </Select>
             </div>
-            <Button onClick={reserve} disabled={booking} className="w-full mt-4 h-12 rounded-xl bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/90" data-testid="exp-booking-reserve-button">
+            <div className="mt-3">
+              {promo ? (
+                <div className="flex items-center justify-between rounded-xl bg-[hsl(var(--primary))]/10 px-3 py-2 text-sm" data-testid="exp-promo-applied">
+                  <span><strong className="font-mono">{promo.code}</strong> · -{promo.discount_percent}%</span>
+                  <button onClick={removePromo} className="text-xs text-muted-foreground hover:text-foreground underline">Retirer</button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <Input placeholder="Code promo (optionnel)" value={promoInput} onChange={(e) => setPromoInput(e.target.value.toUpperCase())} className="h-11 rounded-xl uppercase" data-testid="exp-promo-input" />
+                  <Button type="button" variant="outline" onClick={applyPromo} disabled={promoChecking || !promoInput.trim()} data-testid="exp-promo-apply" className="h-11 rounded-xl">{promoChecking ? '…' : 'Appliquer'}</Button>
+                </div>
+              )}
+            </div>
+            <Button onClick={reserve} disabled={booking} className="w-full mt-3 h-12 rounded-xl bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/90" data-testid="exp-booking-reserve-button">
               {booking ? 'Réservation…' : 'Réserver'}
             </Button>
             <div className="mt-5 text-sm space-y-2">
-              <div className="flex justify-between"><span>{formatXOF(item.price)} x {participants}</span><span>{formatXOF(total)}</span></div>
+              <div className="flex justify-between"><span>{formatXOF(item.price)} x {participants}</span><span>{formatXOF(gross)}</span></div>
+              {discount > 0 && (
+                <div className="flex justify-between text-[hsl(var(--primary))]"><span>Code {promo.code}</span><span>−{formatXOF(discount)}</span></div>
+              )}
               <div className="flex justify-between pt-2 border-t border-border font-semibold"><span>Total</span><span>{formatXOF(total)}</span></div>
             </div>
           </div>

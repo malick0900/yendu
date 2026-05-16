@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, BarChart, Bar } from 'recharts';
-import { LayoutDashboard, Building2, Sparkles, CalendarCheck, Users, MessageSquare, Plus, Pencil, Trash2, FileEdit, MapPin, FileDown, Activity, Bell, Calendar as CalIcon } from 'lucide-react';
+import { LayoutDashboard, Building2, Sparkles, CalendarCheck, Users, MessageSquare, Plus, Pencil, Trash2, FileEdit, MapPin, FileDown, Activity, Bell, Calendar as CalIcon, Tag } from 'lucide-react';
 import { toast } from 'sonner';
 import { ImageUpload, resolveImage } from '@/components/ImageUpload';
 import { useSiteContent } from '@/contexts/SiteContentContext';
@@ -29,6 +29,7 @@ const SIDEBAR = [
   { to: '/admin/properties', label: 'Logements', icon: Building2, badgeKey: null },
   { to: '/admin/experiences', label: 'Expériences', icon: Sparkles, badgeKey: null },
   { to: '/admin/bookings', label: 'Réservations', icon: CalendarCheck, badgeKey: 'pending_bookings' },
+  { to: '/admin/promos', label: 'Codes promo', icon: Tag, badgeKey: null },
   { to: '/admin/users', label: 'Utilisateurs', icon: Users, badgeKey: null },
   { to: '/admin/reviews', label: 'Avis', icon: MessageSquare, badgeKey: null },
   { to: '/admin/notifications', label: 'Notifications', icon: Bell, badgeKey: 'unseen_bookings' },
@@ -745,6 +746,123 @@ const LogsAdmin = () => {
   );
 };
 
+const PromosAdmin = () => {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [form, setForm] = useState({ code: '', discount_percent: 10, valid_until: '', is_active: true });
+  const [submitting, setSubmitting] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  const load = () => {
+    setLoading(true);
+    api.get('/admin/promo-codes').then((r) => setItems(r.data)).finally(() => setLoading(false));
+  };
+  useEffect(() => { load(); }, []);
+
+  const create = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      await api.post('/admin/promo-codes', { ...form, code: form.code.trim().toUpperCase(), discount_percent: Number(form.discount_percent) });
+      toast.success('Code promo créé');
+      setForm({ code: '', discount_percent: 10, valid_until: '', is_active: true });
+      setOpen(false);
+      load();
+    } catch (err) {
+      toast.error(err?.response?.data?.detail || 'Erreur');
+    } finally { setSubmitting(false); }
+  };
+
+  const toggleActive = async (p) => {
+    try {
+      await api.patch(`/admin/promo-codes/${p.id}`, { is_active: !p.is_active });
+      load();
+    } catch { toast.error('Erreur'); }
+  };
+
+  const remove = async (p) => {
+    if (!window.confirm(`Supprimer le code ${p.code} ?`)) return;
+    try { await api.delete(`/admin/promo-codes/${p.id}`); toast.success('Supprimé'); load(); }
+    catch { toast.error('Erreur'); }
+  };
+
+  return (
+    <div data-testid="admin-promos">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="font-display text-2xl">Codes promo</h2>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-[hsl(var(--primary))]" data-testid="promo-create-button"><Plus className="h-4 w-4 mr-1" /> Nouveau code</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader><DialogTitle>Créer un code promo</DialogTitle></DialogHeader>
+            <form onSubmit={create} className="space-y-4">
+              <div>
+                <Label className="text-xs">Code (sera mis en majuscules)</Label>
+                <Input required value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} placeholder="SUMMER25" className="uppercase" data-testid="promo-code-input" />
+              </div>
+              <div>
+                <Label className="text-xs">Remise (%)</Label>
+                <Input required type="number" min={1} max={100} value={form.discount_percent} onChange={(e) => setForm({ ...form, discount_percent: e.target.value })} data-testid="promo-percent-input" />
+              </div>
+              <div>
+                <Label className="text-xs">Valide jusqu'au</Label>
+                <Input required type="date" value={form.valid_until} onChange={(e) => setForm({ ...form, valid_until: e.target.value })} data-testid="promo-validuntil-input" />
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch checked={form.is_active} onCheckedChange={(v) => setForm({ ...form, is_active: v })} />
+                <Label className="text-sm">Actif dès la création</Label>
+              </div>
+              <DialogFooter>
+                <Button type="submit" disabled={submitting} className="bg-[hsl(var(--primary))]" data-testid="promo-submit-button">{submitting ? 'Création…' : 'Créer'}</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <div className="rounded-2xl bg-white border border-border overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Code</TableHead>
+              <TableHead>Remise</TableHead>
+              <TableHead>Valide jusqu'au</TableHead>
+              <TableHead>Utilisations</TableHead>
+              <TableHead>Statut</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loading && <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Chargement…</TableCell></TableRow>}
+            {!loading && items.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Aucun code promo. Créez le premier.</TableCell></TableRow>}
+            {items.map((p) => {
+              const expired = p.valid_until && new Date(p.valid_until) < new Date();
+              return (
+                <TableRow key={p.id} data-testid={`promo-row-${p.code}`}>
+                  <TableCell className="font-mono font-semibold">{p.code}</TableCell>
+                  <TableCell>{p.discount_percent}%</TableCell>
+                  <TableCell className={expired ? 'text-[hsl(var(--destructive))]' : ''}>{p.valid_until} {expired && '(expiré)'}</TableCell>
+                  <TableCell>{p.used_count || 0}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Switch checked={p.is_active} onCheckedChange={() => toggleActive(p)} />
+                      <Badge variant={p.is_active && !expired ? 'default' : 'secondary'}>{p.is_active && !expired ? 'Actif' : 'Inactif'}</Badge>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="sm" onClick={() => remove(p)} data-testid={`promo-delete-${p.code}`}><Trash2 className="h-4 w-4 text-[hsl(var(--destructive))]" /></Button>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  );
+};
+
 const AdminPage = () => (
   <AdminLayout>
     <Routes>
@@ -754,6 +872,7 @@ const AdminPage = () => (
       <Route path="properties" element={<PropertiesAdmin />} />
       <Route path="experiences" element={<ExperiencesAdmin />} />
       <Route path="bookings" element={<BookingsAdmin />} />
+      <Route path="promos" element={<PromosAdmin />} />
       <Route path="users" element={<UsersAdmin />} />
       <Route path="reviews" element={<ReviewsAdmin />} />
       <Route path="notifications" element={<NotificationsAdmin />} />
