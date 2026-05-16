@@ -18,6 +18,32 @@ def _parse_date(s: str) -> datetime:
     return datetime.fromisoformat(s)
 
 
+def _ranges_overlap(a_start: str, a_end: str, b_start: str, b_end: str) -> bool:
+    """Half-open intervals [a_start, a_end) vs [b_start, b_end). Same-day checkin/checkout is OK."""
+    try:
+        return _parse_date(a_start) < _parse_date(b_end) and _parse_date(b_start) < _parse_date(a_end)
+    except Exception:
+        return False
+
+
+async def _ensure_property_available(prop_id: str, check_in: str, check_out: str):
+    """Reject booking if dates collide with an admin block or an existing pending/confirmed booking."""
+    blocks = await db.availability_blocks.find({"property_id": prop_id}, {"_id": 0}).to_list(500)
+    for b in blocks:
+        if _ranges_overlap(check_in, check_out, b.get("start_date", ""), b.get("end_date", "")):
+            raise HTTPException(status_code=409, detail="Ces dates ne sont pas disponibles pour ce logement.")
+
+    existing = await db.bookings.find({
+        "type": "property", "target_id": prop_id,
+        "status": {"$in": ["pending", "confirmed"]},
+    }, {"_id": 0, "check_in": 1, "check_out": 1}).to_list(500)
+    for e in existing:
+        if not e.get("check_in") or not e.get("check_out"):
+            continue
+        if _ranges_overlap(check_in, check_out, e["check_in"], e["check_out"]):
+            raise HTTPException(status_code=409, detail="Ce logement est déjà réservé sur cette période.")
+
+
 @router.post("/bookings")
 async def create_booking(payload: BookingCreate, request: Request):
     user = await get_current_user(request, db, required=True)
@@ -32,6 +58,9 @@ async def create_booking(payload: BookingCreate, request: Request):
             d_out = _parse_date(payload.check_out)
         except Exception:
             raise HTTPException(status_code=400, detail="Format de date invalide")
+        if d_out <= d_in:
+            raise HTTPException(status_code=400, detail="La date de départ doit être après la date d'arrivée")
+        await _ensure_property_available(payload.target_id, payload.check_in, payload.check_out)
         nights = max((d_out - d_in).days, 1)
         unit_price = int(item["price_per_night"])
         total = unit_price * nights

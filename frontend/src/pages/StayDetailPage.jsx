@@ -31,11 +31,28 @@ const StayDetailPage = () => {
   const [guests, setGuests] = useState('2');
   const [booking, setBooking] = useState(false);
   const [favored, setFavored] = useState(false);
+  const [disabledDays, setDisabledDays] = useState([{ before: new Date() }]);
 
   useEffect(() => {
     setLoading(true);
     api.get(`/properties/${id}`).then((r) => setItem(r.data)).catch(() => toast.error('Logement introuvable')).finally(() => setLoading(false));
     api.get('/reviews', { params: { type: 'property', target_id: id } }).then((r) => setReviews(r.data));
+    api.get(`/properties/${id}/availability`).then((r) => {
+      // Backend returns half-open ranges; for the date picker we disable from start_date up to the day BEFORE end_date,
+      // so a guest can still check in the morning a previous guest checks out.
+      const blocks = (r.data || [])
+        .map((b) => {
+          try {
+            const from = new Date(b.start_date);
+            const end = new Date(b.end_date);
+            const to = new Date(end);
+            to.setDate(to.getDate() - 1);
+            return to >= from ? { from, to } : null;
+          } catch { return null; }
+        })
+        .filter(Boolean);
+      setDisabledDays([{ before: new Date() }, ...blocks]);
+    }).catch(() => {});
   }, [id]);
 
   useEffect(() => {
@@ -182,7 +199,7 @@ const StayDetailPage = () => {
                     <span className={range.from ? '' : 'text-muted-foreground'}>{range.from ? (range.to ? `${format(range.from, 'd MMM', { locale: fr })} — ${format(range.to, 'd MMM', { locale: fr })}` : format(range.from, 'd MMM', { locale: fr })) : 'Arrivée — Départ'}</span>
                   </button>
                 </PopoverTrigger>
-                <PopoverContent className="p-0"><Calendar mode="range" selected={range} onSelect={(r) => setRange(r || { from: undefined, to: undefined })} numberOfMonths={1} disabled={{ before: new Date() }} locale={fr} /></PopoverContent>
+                <PopoverContent className="p-0"><Calendar mode="range" selected={range} onSelect={(r) => setRange(r || { from: undefined, to: undefined })} numberOfMonths={1} disabled={disabledDays} locale={fr} /></PopoverContent>
               </Popover>
               <Select value={guests} onValueChange={setGuests}>
                 <SelectTrigger data-testid="booking-guests-select" className="h-12 rounded-xl"><SelectValue /></SelectTrigger>
