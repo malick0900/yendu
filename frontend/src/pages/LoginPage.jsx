@@ -6,11 +6,13 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { useGoogleSignIn, GOOGLE_CLIENT_ID } from '@/hooks/useGoogleSignIn';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 const LoginPage = () => {
   const { loginEmail, setUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -56,23 +58,23 @@ const LoginPage = () => {
       </div>
       <div className="flex items-center justify-center p-6 sm:p-10">
         <form onSubmit={submit} className="w-full max-w-md rounded-3xl bg-white border border-border p-6 sm:p-8 shadow-[0_18px_50px_rgba(20,19,18,0.10)]" data-testid="login-form">
-          <h1 className="font-display text-3xl">Connexion</h1>
-          <p className="text-sm text-muted-foreground mt-1">Heureux de vous revoir.</p>
+          <h1 className="font-display text-3xl">{t('auth.login_title')}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t('auth.login_subtitle')}</p>
           {GOOGLE_CLIENT_ID ? (
             <div ref={googleBtnRef} className="mt-6 flex justify-center" data-testid="auth-google-button" />
           ) : (
-            <p className="mt-6 text-xs text-muted-foreground text-center">Connexion Google indisponible (REACT_APP_GOOGLE_CLIENT_ID manquant)</p>
+            <p className="mt-6 text-xs text-muted-foreground text-center">{t('auth.google_unavailable')}</p>
           )}
-          <div className="flex items-center gap-3 my-6 text-xs text-muted-foreground"><div className="h-px bg-border flex-1" />ou<div className="h-px bg-border flex-1" /></div>
+          <div className="flex items-center gap-3 my-6 text-xs text-muted-foreground"><div className="h-px bg-border flex-1" />{t('auth.or')}<div className="h-px bg-border flex-1" /></div>
           <div className="space-y-4">
-            <div><Label htmlFor="email" className="text-xs">Email</Label><Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1 h-12 rounded-xl" data-testid="auth-email-input" /></div>
-            <div><Label htmlFor="password" className="text-xs">Mot de passe</Label><Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1 h-12 rounded-xl" data-testid="auth-password-input" /></div>
+            <div><Label htmlFor="email" className="text-xs">{t('auth.email')}</Label><Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1 h-12 rounded-xl" data-testid="auth-email-input" /></div>
+            <div><Label htmlFor="password" className="text-xs">{t('auth.password')}</Label><Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1 h-12 rounded-xl" data-testid="auth-password-input" /></div>
           </div>
           {error && <p className="text-sm text-[hsl(var(--destructive))] mt-3" data-testid="auth-error-text">{error}</p>}
-          <Button type="submit" disabled={loading} className="w-full mt-6 h-12 rounded-xl bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/90" data-testid="auth-submit-button">{loading ? 'Connexion…' : 'Se connecter'}</Button>
-          <p className="text-sm text-muted-foreground mt-5 text-center">Pas de compte ? <Link to="/register" className="text-[hsl(var(--primary))] font-semibold" data-testid="auth-register-link">Créer un compte</Link></p>
+          <Button type="submit" disabled={loading} className="w-full mt-6 h-12 rounded-xl bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/90" data-testid="auth-submit-button">{loading ? t('auth.logging_in') : t('auth.submit_login')}</Button>
+          <p className="text-sm text-muted-foreground mt-5 text-center">{t('auth.no_account')} <Link to="/register" className="text-[hsl(var(--primary))] font-semibold" data-testid="auth-register-link">{t('auth.go_register')}</Link></p>
           <div className="mt-6 p-3 rounded-xl bg-muted/50 text-xs text-muted-foreground">
-            <p><strong>Comptes de test :</strong></p>
+            <p><strong>{t('auth.test_accounts')}</strong></p>
             <p>Admin · admin@terangastay.sn / Admin123!</p>
             <p>Voyageur · traveler@example.com / Traveler123!</p>
           </div>

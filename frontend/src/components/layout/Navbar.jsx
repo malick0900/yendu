@@ -8,17 +8,21 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Menu, Heart, User, LogOut, LayoutDashboard, ShieldCheck, Bell } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
-
-const NAV_ITEMS = [
-  { to: '/stays', label: 'Logements' },
-  { to: '/experiences', label: 'Expériences' },
-  { to: '/about', label: 'À propos' },
-];
+import { fr, enUS } from 'date-fns/locale';
+import { useTranslation } from 'react-i18next';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
 export const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+  const dateLocale = i18n.resolvedLanguage === 'en' ? enUS : fr;
+
+  const NAV_ITEMS = [
+    { to: '/stays', label: t('nav.stays') },
+    { to: '/experiences', label: t('nav.experiences') },
+    { to: '/about', label: t('nav.about') },
+  ];
   const [adminBadge, setAdminBadge] = useState(0);
   const [recentBookings, setRecentBookings] = useState([]);
 
@@ -85,6 +89,7 @@ export const Navbar = () => {
         </nav>
 
         <div className="flex items-center gap-2">
+          <LanguageSwitcher />
           {user?.role === 'ADMIN' && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -97,12 +102,12 @@ export const Navbar = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-80" onCloseAutoFocus={(e) => e.preventDefault()}>
                 <DropdownMenuLabel className="flex items-center justify-between">
-                  <span>Nouvelles réservations</span>
-                  {adminBadge > 0 && <span className="text-xs text-[hsl(var(--primary))] font-semibold">{adminBadge} non lue{adminBadge > 1 ? 's' : ''}</span>}
+                  <span>{i18n.resolvedLanguage === 'en' ? 'New bookings' : 'Nouvelles réservations'}</span>
+                  {adminBadge > 0 && <span className="text-xs text-[hsl(var(--primary))] font-semibold">{i18n.resolvedLanguage === 'en' ? `${adminBadge} unread` : `${adminBadge} non lue${adminBadge > 1 ? 's' : ''}`}</span>}
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {recentBookings.length === 0 ? (
-                  <p className="px-3 py-6 text-sm text-muted-foreground text-center">Aucune réservation en attente</p>
+                  <p className="px-3 py-6 text-sm text-muted-foreground text-center">{i18n.resolvedLanguage === 'en' ? 'No pending bookings' : 'Aucune réservation en attente'}</p>
                 ) : (
                   recentBookings.map((b) => (
                     <DropdownMenuItem
@@ -116,14 +121,14 @@ export const Navbar = () => {
                         <span className="text-xs text-[hsl(var(--primary))] font-semibold whitespace-nowrap ml-2">{formatXOF(b.total_price)}</span>
                       </div>
                       <span className="text-xs text-muted-foreground truncate max-w-full">
-                        {b.user_name} · {b.created_at ? formatDistanceToNow(new Date(b.created_at), { addSuffix: true, locale: fr }) : ''}
+                        {b.user_name} · {b.created_at ? formatDistanceToNow(new Date(b.created_at), { addSuffix: true, locale: dateLocale }) : ''}
                       </span>
                     </DropdownMenuItem>
                   ))
                 )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => { markBookingsSeen(); navigate('/admin/bookings'); }} className="justify-center text-sm font-medium text-[hsl(var(--primary))]">
-                  Voir toutes les réservations
+                  {i18n.resolvedLanguage === 'en' ? 'View all bookings' : 'Voir toutes les réservations'}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -148,27 +153,27 @@ export const Navbar = () => {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate('/dashboard')} data-testid="navbar-dashboard-link">
-                  <LayoutDashboard className="h-4 w-4 mr-2" /> Tableau de bord
+                  <LayoutDashboard className="h-4 w-4 mr-2" /> {t('nav.dashboard')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate('/dashboard?tab=favorites')} data-testid="navbar-favorites-link">
-                  <Heart className="h-4 w-4 mr-2" /> Mes favoris
+                  <Heart className="h-4 w-4 mr-2" /> {t('nav.favorites')}
                 </DropdownMenuItem>
                 {user.role === 'ADMIN' && (
                   <DropdownMenuItem onClick={() => navigate('/admin/bookings')} data-testid="navbar-admin-link">
-                    <ShieldCheck className="h-4 w-4 mr-2" /> Administration
+                    <ShieldCheck className="h-4 w-4 mr-2" /> {t('nav.admin')}
                     {adminBadge > 0 && <span className="ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-bold bg-[hsl(var(--primary))] text-white">{adminBadge > 99 ? '99+' : adminBadge}</span>}
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} data-testid="navbar-logout-button">
-                  <LogOut className="h-4 w-4 mr-2" /> Se déconnecter
+                  <LogOut className="h-4 w-4 mr-2" /> {t('nav.logout')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <div className="hidden md:flex items-center gap-2">
-              <Link to="/login" data-testid="navbar-login-link"><Button variant="ghost" size="sm">Connexion</Button></Link>
-              <Link to="/register" data-testid="navbar-register-link"><Button size="sm" className="bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/90">Créer un compte</Button></Link>
+              <Link to="/login" data-testid="navbar-login-link"><Button variant="ghost" size="sm">{t('nav.login')}</Button></Link>
+              <Link to="/register" data-testid="navbar-register-link"><Button size="sm" className="bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/90">{t('nav.register')}</Button></Link>
             </div>
           )}
 
@@ -187,16 +192,16 @@ export const Navbar = () => {
                 <div className="mt-4 pt-4 border-t border-border flex flex-col gap-2">
                   {!user ? (
                     <>
-                      <Link to="/login"><Button variant="outline" className="w-full" data-testid="mobile-login-link">Connexion</Button></Link>
-                      <Link to="/register"><Button className="w-full bg-[hsl(var(--primary))]" data-testid="mobile-register-link">Créer un compte</Button></Link>
+                      <Link to="/login"><Button variant="outline" className="w-full" data-testid="mobile-login-link">{t('nav.login')}</Button></Link>
+                      <Link to="/register"><Button className="w-full bg-[hsl(var(--primary))]" data-testid="mobile-register-link">{t('nav.register')}</Button></Link>
                     </>
                   ) : (
                     <>
-                      <Link to="/dashboard"><Button variant="outline" className="w-full">Tableau de bord</Button></Link>
+                      <Link to="/dashboard"><Button variant="outline" className="w-full">{t('nav.dashboard')}</Button></Link>
                       {user.role === 'ADMIN' && (
-                        <Link to="/admin"><Button variant="outline" className="w-full">Administration</Button></Link>
+                        <Link to="/admin"><Button variant="outline" className="w-full">{t('nav.admin')}</Button></Link>
                       )}
-                      <Button onClick={handleLogout} variant="ghost" className="w-full">Se déconnecter</Button>
+                      <Button onClick={handleLogout} variant="ghost" className="w-full">{t('nav.logout')}</Button>
                     </>
                   )}
                 </div>

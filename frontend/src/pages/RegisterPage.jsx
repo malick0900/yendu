@@ -6,10 +6,12 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { useGoogleSignIn, GOOGLE_CLIENT_ID } from '@/hooks/useGoogleSignIn';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 const RegisterPage = () => {
   const { registerEmail, setUser } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [form, setForm] = useState({ name: '', email: '', password: '', phone: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -48,23 +50,23 @@ const RegisterPage = () => {
       </div>
       <div className="flex items-center justify-center p-6 sm:p-10">
         <form onSubmit={submit} className="w-full max-w-md rounded-3xl bg-white border border-border p-6 sm:p-8 shadow-[0_18px_50px_rgba(20,19,18,0.10)]" data-testid="register-form">
-          <h1 className="font-display text-3xl">Créer un compte</h1>
-          <p className="text-sm text-muted-foreground mt-1">Quelques secondes suffisent.</p>
+          <h1 className="font-display text-3xl">{t('auth.register_title')}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t('auth.register_subtitle')}</p>
           {GOOGLE_CLIENT_ID ? (
             <div ref={googleBtnRef} className="mt-6 flex justify-center" data-testid="register-google-button" />
           ) : (
-            <p className="mt-6 text-xs text-muted-foreground text-center">Connexion Google indisponible (REACT_APP_GOOGLE_CLIENT_ID manquant)</p>
+            <p className="mt-6 text-xs text-muted-foreground text-center">{t('auth.google_unavailable')}</p>
           )}
-          <div className="flex items-center gap-3 my-6 text-xs text-muted-foreground"><div className="h-px bg-border flex-1" />ou<div className="h-px bg-border flex-1" /></div>
+          <div className="flex items-center gap-3 my-6 text-xs text-muted-foreground"><div className="h-px bg-border flex-1" />{t('auth.or')}<div className="h-px bg-border flex-1" /></div>
           <div className="space-y-4">
-            <div><Label className="text-xs">Nom complet</Label><Input required value={form.name} onChange={(e) => setForm({...form, name: e.target.value})} className="mt-1 h-12 rounded-xl" data-testid="register-name-input" /></div>
-            <div><Label className="text-xs">Email</Label><Input type="email" required value={form.email} onChange={(e) => setForm({...form, email: e.target.value})} className="mt-1 h-12 rounded-xl" data-testid="register-email-input" /></div>
-            <div><Label className="text-xs">Téléphone (optionnel)</Label><Input value={form.phone} onChange={(e) => setForm({...form, phone: e.target.value})} className="mt-1 h-12 rounded-xl" data-testid="register-phone-input" /></div>
-            <div><Label className="text-xs">Mot de passe</Label><Input type="password" required minLength={6} value={form.password} onChange={(e) => setForm({...form, password: e.target.value})} className="mt-1 h-12 rounded-xl" data-testid="register-password-input" /></div>
+            <div><Label className="text-xs">{t('auth.name')}</Label><Input required value={form.name} onChange={(e) => setForm({...form, name: e.target.value})} className="mt-1 h-12 rounded-xl" data-testid="register-name-input" /></div>
+            <div><Label className="text-xs">{t('auth.email')}</Label><Input type="email" required value={form.email} onChange={(e) => setForm({...form, email: e.target.value})} className="mt-1 h-12 rounded-xl" data-testid="register-email-input" /></div>
+            <div><Label className="text-xs">{t('auth.phone')}</Label><Input value={form.phone} onChange={(e) => setForm({...form, phone: e.target.value})} className="mt-1 h-12 rounded-xl" data-testid="register-phone-input" /></div>
+            <div><Label className="text-xs">{t('auth.password')}</Label><Input type="password" required minLength={6} value={form.password} onChange={(e) => setForm({...form, password: e.target.value})} className="mt-1 h-12 rounded-xl" data-testid="register-password-input" /></div>
           </div>
           {error && <p className="text-sm text-[hsl(var(--destructive))] mt-3" data-testid="register-error-text">{error}</p>}
-          <Button type="submit" disabled={loading} className="w-full mt-6 h-12 rounded-xl bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/90" data-testid="register-submit-button">{loading ? 'Création…' : 'Créer mon compte'}</Button>
-          <p className="text-sm text-muted-foreground mt-5 text-center">Déjà un compte ? <Link to="/login" className="text-[hsl(var(--primary))] font-semibold" data-testid="register-login-link">Se connecter</Link></p>
+          <Button type="submit" disabled={loading} className="w-full mt-6 h-12 rounded-xl bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/90" data-testid="register-submit-button">{loading ? t('auth.creating') : t('auth.submit_register')}</Button>
+          <p className="text-sm text-muted-foreground mt-5 text-center">{t('auth.already_account')} <Link to="/login" className="text-[hsl(var(--primary))] font-semibold" data-testid="register-login-link">{t('auth.go_login')}</Link></p>
         </form>
       </div>
     </div>
