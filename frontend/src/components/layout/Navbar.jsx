@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { api } from '@/lib/api';
+import { api, formatXOF } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Menu, Heart, User, LogOut, LayoutDashboard, ShieldCheck, Bell } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 const NAV_ITEMS = [
   { to: '/stays', label: 'Hébergements' },
@@ -18,9 +20,10 @@ export const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [adminBadge, setAdminBadge] = useState(0);
+  const [recentBookings, setRecentBookings] = useState([]);
 
   useEffect(() => {
-    if (!user || user.role !== 'ADMIN') { setAdminBadge(0); return; }
+    if (!user || user.role !== 'ADMIN') { setAdminBadge(0); setRecentBookings([]); return; }
     let mounted = true;
     const refresh = async () => {
       try {
@@ -30,6 +33,12 @@ export const Navbar = () => {
         const lastSeenMs = lastSeen ? new Date(lastSeen).getTime() : 0;
         const unseen = data.filter((b) => (b.created_at ? new Date(b.created_at).getTime() : 0) > lastSeenMs).length;
         setAdminBadge(unseen);
+        // Keep the 5 most recent pending bookings for the bell dropdown
+        const recent = [...data]
+          .filter((b) => b.status === 'pending')
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          .slice(0, 5);
+        setRecentBookings(recent);
       } catch {}
     };
     refresh();
@@ -38,6 +47,11 @@ export const Navbar = () => {
     window.addEventListener('focus', onFocus);
     return () => { mounted = false; clearInterval(id); window.removeEventListener('focus', onFocus); };
   }, [user]);
+
+  const markBookingsSeen = () => {
+    localStorage.setItem('ts_admin_seen_bookings_at', new Date().toISOString());
+    setAdminBadge(0);
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -71,6 +85,49 @@ export const Navbar = () => {
         </nav>
 
         <div className="flex items-center gap-2">
+          {user?.role === 'ADMIN' && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button data-testid="navbar-admin-bell" aria-label="Notifications" className="relative inline-flex items-center justify-center h-10 w-10 rounded-full border border-border bg-white hover:bg-muted transition-colors">
+                  <Bell className="h-4 w-4 text-foreground/70" />
+                  {adminBadge > 0 && (
+                    <span data-testid="navbar-admin-badge" className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 inline-flex items-center justify-center rounded-full bg-[hsl(var(--primary))] text-white text-[10px] font-bold animate-pulse">{adminBadge > 99 ? '99+' : adminBadge}</span>
+                  )}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-80" onCloseAutoFocus={(e) => e.preventDefault()}>
+                <DropdownMenuLabel className="flex items-center justify-between">
+                  <span>Nouvelles réservations</span>
+                  {adminBadge > 0 && <span className="text-xs text-[hsl(var(--primary))] font-semibold">{adminBadge} non lue{adminBadge > 1 ? 's' : ''}</span>}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {recentBookings.length === 0 ? (
+                  <p className="px-3 py-6 text-sm text-muted-foreground text-center">Aucune réservation en attente</p>
+                ) : (
+                  recentBookings.map((b) => (
+                    <DropdownMenuItem
+                      key={b.id}
+                      data-testid={`navbar-notif-${b.id}`}
+                      onClick={() => { markBookingsSeen(); navigate('/admin/bookings'); }}
+                      className="flex flex-col items-start gap-0.5 py-2 cursor-pointer"
+                    >
+                      <div className="flex items-center justify-between w-full">
+                        <span className="font-medium text-sm truncate max-w-[200px]">{b.target_title}</span>
+                        <span className="text-xs text-[hsl(var(--primary))] font-semibold whitespace-nowrap ml-2">{formatXOF(b.total_price)}</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground truncate max-w-full">
+                        {b.user_name} · {b.created_at ? formatDistanceToNow(new Date(b.created_at), { addSuffix: true, locale: fr }) : ''}
+                      </span>
+                    </DropdownMenuItem>
+                  ))
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => { markBookingsSeen(); navigate('/admin/bookings'); }} className="justify-center text-sm font-medium text-[hsl(var(--primary))]">
+                  Voir toutes les réservations
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -80,9 +137,6 @@ export const Navbar = () => {
                     <AvatarImage src={user.avatar || ''} alt={user.name} />
                     <AvatarFallback className="text-xs bg-[hsl(var(--secondary))] text-white">{user.name?.[0]?.toUpperCase() || 'U'}</AvatarFallback>
                   </Avatar>
-                  {adminBadge > 0 && user.role === 'ADMIN' && (
-                    <span data-testid="navbar-admin-badge" className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 inline-flex items-center justify-center rounded-full bg-[hsl(var(--primary))] text-white text-[10px] font-bold animate-pulse">{adminBadge > 99 ? '99+' : adminBadge}</span>
-                  )}
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
