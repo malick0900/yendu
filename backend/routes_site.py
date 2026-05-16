@@ -133,6 +133,18 @@ async def get_site_content():
     return merged
 
 
+@router.post("/admin/site/content/reset")
+async def reset_site_content(request: Request):
+    admin = await require_admin(request, db)
+    await db.site_content.update_one(
+        {"key": "main"},
+        {"$set": {"content": DEFAULT_SITE_CONTENT, "updated_at": datetime.now(timezone.utc).isoformat()}},
+        upsert=True,
+    )
+    await _log_admin(admin, "reset_site_content", None)
+    return DEFAULT_SITE_CONTENT
+
+
 @router.patch("/admin/site/content")
 async def update_site_content(payload: SiteContentUpdate, request: Request):
     admin = await require_admin(request, db)

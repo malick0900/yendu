@@ -194,13 +194,28 @@ const ContentAdmin = () => {
     finally { setSaving(false); }
   };
 
+  const resetToDefaults = async () => {
+    if (!window.confirm('Remettre tout le contenu aux valeurs par défaut ? Les modifications actuelles seront perdues.')) return;
+    setSaving(true);
+    try {
+      const { data } = await api.post('/admin/site/content/reset');
+      setContent(JSON.parse(JSON.stringify(data)));
+      toast.success('Contenu réinitialisé');
+      reload();
+    } catch { toast.error('Erreur lors du reset'); }
+    finally { setSaving(false); }
+  };
+
   if (!content) return <p>Chargement…</p>;
 
   return (
     <div data-testid="admin-content">
       <div className="flex justify-between items-center mb-4">
         <h2 className="font-display text-2xl">Contenu du site</h2>
-        <Button onClick={save} disabled={saving} className="bg-[hsl(var(--primary))]" data-testid="save-content-button">{saving ? 'Enregistrement…' : 'Enregistrer'}</Button>
+        <div className="flex gap-2">
+          <Button onClick={resetToDefaults} disabled={saving} variant="outline" data-testid="reset-content-button">Reset par défaut</Button>
+          <Button onClick={save} disabled={saving} className="bg-[hsl(var(--primary))]" data-testid="save-content-button">{saving ? 'Enregistrement…' : 'Enregistrer'}</Button>
+        </div>
       </div>
 
       <Tabs defaultValue="hero">
