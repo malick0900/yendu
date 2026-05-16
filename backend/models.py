@@ -91,7 +91,7 @@ class Destination(DestinationBase):
     created_at: datetime = Field(default_factory=_now)
 
 
-# ---------- Properties (hébergements) ----------
+# ---------- Properties (logements) ----------
 class PropertyBase(BaseModel):
     title: str
     description: str

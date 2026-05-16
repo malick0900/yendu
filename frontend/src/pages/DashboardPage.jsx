@@ -113,7 +113,7 @@ const DashboardPage = () => {
               <CalendarDays className="h-10 w-10 mx-auto text-muted-foreground" />
               <p className="mt-3">Aucune réservation pour le moment.</p>
               <div className="flex gap-2 justify-center mt-4">
-                <Link to="/stays"><Button>Découvrir des hébergements</Button></Link>
+                <Link to="/stays"><Button>Découvrir des logements</Button></Link>
                 <Link to="/experiences"><Button variant="outline">Découvrir des expériences</Button></Link>
               </div>
             </div>
@@ -126,7 +126,7 @@ const DashboardPage = () => {
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <Link to={`/${b.type === 'property' ? 'stays' : 'experiences'}/${b.target_id}`} className="font-semibold hover:underline">{b.target_title}</Link>
-                        <p className="text-xs text-muted-foreground uppercase tracking-wide mt-0.5">{b.type === 'property' ? 'Hébergement' : 'Expérience'}</p>
+                        <p className="text-xs text-muted-foreground uppercase tracking-wide mt-0.5">{b.type === 'property' ? 'Logement' : 'Expérience'}</p>
                       </div>
                       <Badge className={STATUS_STYLE[b.status]}>{STATUS_LABEL[b.status]}</Badge>
                     </div>

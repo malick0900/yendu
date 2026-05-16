@@ -110,7 +110,7 @@ async def list_properties(
 async def get_property(prop_id: str):
     item = await db.properties.find_one({"id": prop_id}, {"_id": 0})
     if not item:
-        raise HTTPException(status_code=404, detail="Hébergement introuvable")
+        raise HTTPException(status_code=404, detail="Logement introuvable")
     return serialize_doc(item)
 
 
@@ -140,7 +140,7 @@ async def update_property(prop_id: str, payload: PropertyUpdate, request: Reques
         await db.properties.update_one({"id": prop_id}, {"$set": update_data})
     item = await db.properties.find_one({"id": prop_id}, {"_id": 0})
     if not item:
-        raise HTTPException(status_code=404, detail="Hébergement introuvable")
+        raise HTTPException(status_code=404, detail="Logement introuvable")
     return serialize_doc(item)
 
 

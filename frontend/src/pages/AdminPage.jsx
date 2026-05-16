@@ -26,7 +26,7 @@ const SIDEBAR = [
   { to: '/admin', label: "Vue d'ensemble", icon: LayoutDashboard, end: true, badgeKey: null },
   { to: '/admin/content', label: 'Contenu du site', icon: FileEdit, badgeKey: null },
   { to: '/admin/destinations', label: 'Destinations', icon: MapPin, badgeKey: null },
-  { to: '/admin/properties', label: 'Hébergements', icon: Building2, badgeKey: null },
+  { to: '/admin/properties', label: 'Logements', icon: Building2, badgeKey: null },
   { to: '/admin/experiences', label: 'Expériences', icon: Sparkles, badgeKey: null },
   { to: '/admin/bookings', label: 'Réservations', icon: CalendarCheck, badgeKey: 'pending_bookings' },
   { to: '/admin/users', label: 'Utilisateurs', icon: Users, badgeKey: null },
@@ -123,7 +123,7 @@ const Overview = () => {
         <Stat label="Taux d'occupation" value={`${stats.occupancy_rate}%`} sub="30 derniers jours" />
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Stat label="Hébergements" value={stats.total_properties} />
+        <Stat label="Logements" value={stats.total_properties} />
         <Stat label="Expériences" value={stats.total_experiences} />
         <Stat label="Durée moyenne séjour" value={`${stats.avg_stay} nuits`} />
         <Stat label="Voyageurs inscrits" value={stats.total_travelers} sub={`${stats.total_users} utilisateurs au total`} />
@@ -160,7 +160,7 @@ const Overview = () => {
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="rounded-2xl bg-white border border-border p-5">
-          <h3 className="font-display text-lg">Top hébergements</h3>
+          <h3 className="font-display text-lg">Top logements</h3>
           <Table className="mt-3">
             <TableHeader><TableRow><TableHead>Titre</TableHead><TableHead className="text-right">Réservations</TableHead><TableHead className="text-right">Revenus</TableHead></TableRow></TableHeader>
             <TableBody>{stats.top_properties.map((p) => (<TableRow key={p.id}><TableCell className="text-sm">{p.title}</TableCell><TableCell className="text-right">{p.count}</TableCell><TableCell className="text-right text-sm">{formatXOF(p.revenue)}</TableCell></TableRow>))}</TableBody>
@@ -242,7 +242,7 @@ const ContentAdmin = () => {
             <div><Label>Sous-titre</Label><Input value={content.destinations_subtitle || ''} onChange={(e) => setField('destinations_subtitle', e.target.value)} /></div>
           </div>
           <div className="rounded-2xl bg-white border border-border p-5 space-y-3">
-            <h3 className="font-semibold">Section Hébergements premium</h3>
+            <h3 className="font-semibold">Section Logements premium</h3>
             <div><Label>Titre</Label><Input value={content.properties_title || ''} onChange={(e) => setField('properties_title', e.target.value)} /></div>
             <div><Label>Sous-titre</Label><Input value={content.properties_subtitle || ''} onChange={(e) => setField('properties_subtitle', e.target.value)} /></div>
           </div>
@@ -452,8 +452,8 @@ const PropertiesAdmin = () => {
   useEffect(() => { load(); api.get('/destinations').then((r) => setDestinations(r.data)); }, []);
   const save = async (f) => {
     try {
-      if (editing) { await api.patch(`/admin/properties/${editing.id}`, f); toast.success('Hébergement mis à jour'); }
-      else { await api.post('/admin/properties', f); toast.success('Hébergement créé'); }
+      if (editing) { await api.patch(`/admin/properties/${editing.id}`, f); toast.success('Logement mis à jour'); }
+      else { await api.post('/admin/properties', f); toast.success('Logement créé'); }
       setOpen(false); setEditing(null); load();
     } catch (e) { toast.error(e?.response?.data?.detail || 'Erreur'); }
   };
@@ -461,10 +461,10 @@ const PropertiesAdmin = () => {
   return (
     <div data-testid="admin-properties">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="font-display text-2xl">Hébergements ({items.length})</h2>
+        <h2 className="font-display text-2xl">Logements ({items.length})</h2>
         <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setEditing(null); }}>
           <DialogTrigger asChild><Button data-testid="add-property-button" onClick={() => { setEditing(null); setOpen(true); }}><Plus className="h-4 w-4 mr-1" /> Ajouter</Button></DialogTrigger>
-          <DialogContent className="max-w-3xl"><DialogHeader><DialogTitle>{editing ? 'Modifier' : 'Nouvel'} hébergement</DialogTitle></DialogHeader><PropertyForm initial={editing} destinations={destinations} onSubmit={save} onClose={() => { setOpen(false); setEditing(null); }} /></DialogContent>
+          <DialogContent className="max-w-3xl"><DialogHeader><DialogTitle>{editing ? 'Modifier' : 'Nouvel'} logement</DialogTitle></DialogHeader><PropertyForm initial={editing} destinations={destinations} onSubmit={save} onClose={() => { setOpen(false); setEditing(null); }} /></DialogContent>
         </Dialog>
       </div>
       <div className="rounded-2xl bg-white border border-border overflow-x-auto" data-testid="admin-stays-table">

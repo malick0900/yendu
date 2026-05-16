@@ -27,10 +27,14 @@ dist/
 
 # Env files (NEVER commit secrets)
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
 backend/.env
+backend/.env.*
+!backend/.env.example
 frontend/.env
+frontend/.env.*
+!frontend/.env.example
 
 # Logs
 *.log

@@ -14,7 +14,7 @@ const AboutPage = () => {
         {content.about_text.split('\n\n').map((p, i) => (<p key={i}>{p}</p>))}
       </div>
       <div className="mt-8 flex gap-3 flex-wrap">
-        <Link to="/stays"><Button className="rounded-full bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/90">Voir les hébergements</Button></Link>
+        <Link to="/stays"><Button className="rounded-full bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/90">Voir les logements</Button></Link>
         <Link to="/experiences"><Button variant="outline" className="rounded-full">Découvrir les expériences</Button></Link>
       </div>
     </div>

@@ -11,7 +11,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 const NAV_ITEMS = [
-  { to: '/stays', label: 'Hébergements' },
+  { to: '/stays', label: 'Logements' },
   { to: '/experiences', label: 'Expériences' },
   { to: '/about', label: 'À propos' },
 ];

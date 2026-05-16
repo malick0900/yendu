@@ -34,7 +34,7 @@ const StayDetailPage = () => {
 
   useEffect(() => {
     setLoading(true);
-    api.get(`/properties/${id}`).then((r) => setItem(r.data)).catch(() => toast.error('Hébergement introuvable')).finally(() => setLoading(false));
+    api.get(`/properties/${id}`).then((r) => setItem(r.data)).catch(() => toast.error('Logement introuvable')).finally(() => setLoading(false));
     api.get('/reviews', { params: { type: 'property', target_id: id } }).then((r) => setReviews(r.data));
   }, [id]);
 

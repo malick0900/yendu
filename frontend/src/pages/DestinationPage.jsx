@@ -45,7 +45,7 @@ const DestinationPage = () => {
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         <div className="flex items-end justify-between mb-6">
-          <h2 className="font-display text-3xl">Hébergements à {destination.name}</h2>
+          <h2 className="font-display text-3xl">Logements à {destination.name}</h2>
           <Link to={`/stays?destination=${slug}`}><Button variant="outline" className="rounded-full">Voir tout</Button></Link>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">{properties.slice(0, 8).map((p) => <PropertyCard key={p.id} item={p} />)}</div>

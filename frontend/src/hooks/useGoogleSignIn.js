@@ -25,8 +25,9 @@ export function useGoogleSignIn({ onSuccess, onError }) {
           }
         },
       });
+      const width = Math.min(360, ref.current.clientWidth || 320);
       window.google.accounts.id.renderButton(ref.current, {
-        theme: 'outline', size: 'large', width: 360, text: 'continue_with', shape: 'pill',
+        theme: 'outline', size: 'large', width, text: 'continue_with', shape: 'pill',
       });
     };
 

@@ -54,8 +54,8 @@ const StaysPage = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="font-display text-3xl sm:text-4xl">Hébergements au Sénégal</h1>
-          <p className="text-muted-foreground mt-1">{loading ? 'Recherche…' : `${items.length} hébergement${items.length > 1 ? 's' : ''} disponible${items.length > 1 ? 's' : ''}`}</p>
+          <h1 className="font-display text-3xl sm:text-4xl">Logements au Sénégal</h1>
+          <p className="text-muted-foreground mt-1">{loading ? 'Recherche…' : `${items.length} logement${items.length > 1 ? 's' : ''} disponible${items.length > 1 ? 's' : ''}`}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <Tabs value={view} onValueChange={setView} className="hidden lg:block">
@@ -91,7 +91,7 @@ const StaysPage = () => {
                   </Select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Type d’hébergement</label>
+                  <label className="text-sm font-medium mb-2 block">Type d’logement</label>
                   <Select value={type} onValueChange={setType}>
                     <SelectTrigger data-testid="filter-type"><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -140,7 +140,7 @@ const StaysPage = () => {
           ) : items.length === 0 ? (
             <div className="text-center py-20">
               <MapPin className="h-10 w-10 mx-auto text-muted-foreground" />
-              <p className="mt-3 font-medium">Aucun hébergement avec ces critères</p>
+              <p className="mt-3 font-medium">Aucun logement avec ces critères</p>
               <Button variant="outline" className="mt-4" onClick={clearFilters}>Réinitialiser les filtres</Button>
             </div>
           ) : (

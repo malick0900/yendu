@@ -24,7 +24,7 @@ async def create_booking(payload: BookingCreate, request: Request):
     if payload.type == "property":
         item = await db.properties.find_one({"id": payload.target_id}, {"_id": 0})
         if not item:
-            raise HTTPException(status_code=404, detail="Hébergement introuvable")
+            raise HTTPException(status_code=404, detail="Logement introuvable")
         if not payload.check_in or not payload.check_out:
             raise HTTPException(status_code=400, detail="Dates de séjour requises")
         try:

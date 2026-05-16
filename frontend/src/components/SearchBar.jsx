@@ -38,7 +38,7 @@ export const SearchBar = ({ defaultMode = 'stays', onSearch }) => {
   return (
     <form onSubmit={submit} data-testid="hero-search-form" className="w-full max-w-5xl mx-auto">
       <div className="flex justify-center mb-3 gap-2">
-        <button type="button" onClick={() => setMode('stays')} data-testid="search-mode-stays" className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${mode === 'stays' ? 'bg-white text-foreground shadow-sm' : 'bg-white/25 text-white hover:bg-white/40'}`}>Hébergements</button>
+        <button type="button" onClick={() => setMode('stays')} data-testid="search-mode-stays" className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${mode === 'stays' ? 'bg-white text-foreground shadow-sm' : 'bg-white/25 text-white hover:bg-white/40'}`}>Logements</button>
         <button type="button" onClick={() => setMode('experiences')} data-testid="search-mode-experiences" className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${mode === 'experiences' ? 'bg-white text-foreground shadow-sm' : 'bg-white/25 text-white hover:bg-white/40'}`}>Expériences</button>
       </div>
       <div className="rounded-3xl md:rounded-full bg-white/95 backdrop-blur border border-border shadow-[0_18px_50px_rgba(20,19,18,0.18)] p-2 grid grid-cols-1 md:grid-cols-[1.3fr_1fr_0.9fr_auto] gap-1">
