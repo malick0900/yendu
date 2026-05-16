@@ -73,11 +73,6 @@ const LoginPage = () => {
           {error && <p className="text-sm text-[hsl(var(--destructive))] mt-3" data-testid="auth-error-text">{error}</p>}
           <Button type="submit" disabled={loading} className="w-full mt-6 h-12 rounded-xl bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/90" data-testid="auth-submit-button">{loading ? t('auth.logging_in') : t('auth.submit_login')}</Button>
           <p className="text-sm text-muted-foreground mt-5 text-center">{t('auth.no_account')} <Link to="/register" className="text-[hsl(var(--primary))] font-semibold" data-testid="auth-register-link">{t('auth.go_register')}</Link></p>
-          <div className="mt-6 p-3 rounded-xl bg-muted/50 text-xs text-muted-foreground">
-            <p><strong>{t('auth.test_accounts')}</strong></p>
-            <p>Admin · admin@terangastay.sn / Admin123!</p>
-            <p>Voyageur · traveler@example.com / Traveler123!</p>
-          </div>
         </form>
       </div>
     </div>
