@@ -8,8 +8,12 @@ from models import (
     ReviewCreate, Review,
     FavoriteCreate, Favorite,
     PromoValidateRequest,
+    ReviewFromToken,
 )
-from auth_utils import get_current_user, require_admin, serialize_doc
+from auth_utils import (
+    get_current_user, require_admin, serialize_doc,
+    create_review_token, decode_review_token,
+)
 from routes_site import enqueue_notification, _log_admin
 
 router = APIRouter(prefix="/api", tags=["bookings"])
@@ -243,6 +247,72 @@ async def create_review(payload: ReviewCreate, request: Request):
             {"$set": {"rating_avg": round(agg[0]["avg"], 2), "rating_count": agg[0]["count"]}},
         )
     return serialize_doc(doc)
+
+
+@router.post("/reviews/from-token")
+async def create_review_from_token(payload: ReviewFromToken):
+    """Public endpoint — let a guest submit a review using the token emailed after their stay."""
+    booking_id = decode_review_token(payload.token)
+    if not booking_id:
+        raise HTTPException(status_code=400, detail="Lien invalide ou expiré")
+    if payload.rating < 1 or payload.rating > 5:
+        raise HTTPException(status_code=400, detail="La note doit être entre 1 et 5")
+
+    booking = await db.bookings.find_one({"id": booking_id}, {"_id": 0})
+    if not booking:
+        raise HTTPException(status_code=404, detail="Réservation introuvable")
+
+    # One review per booking
+    already = await db.reviews.find_one({"booking_id": booking_id}, {"_id": 0})
+    if already:
+        raise HTTPException(status_code=409, detail="Un avis a déjà été déposé pour cette réservation")
+
+    review = Review(
+        type=booking["type"],
+        target_id=booking["target_id"],
+        user_id=booking.get("user_id", ""),
+        user_name=booking.get("user_name", ""),
+        user_avatar=None,
+        rating=payload.rating,
+        comment=payload.comment,
+    )
+    doc = review.model_dump()
+    doc["created_at"] = doc["created_at"].isoformat()
+    doc["booking_id"] = booking_id  # track origin so we don't accept a second one
+    await db.reviews.insert_one(doc)
+    doc.pop("_id", None)
+
+    # Recompute aggregate (same as /reviews)
+    collection_name = "properties" if booking["type"] == "property" else "experiences"
+    pipeline = [
+        {"$match": {"type": booking["type"], "target_id": booking["target_id"], "is_visible": True}},
+        {"$group": {"_id": None, "avg": {"$avg": "$rating"}, "count": {"$sum": 1}}},
+    ]
+    agg = await db.reviews.aggregate(pipeline).to_list(1)
+    if agg:
+        await db[collection_name].update_one(
+            {"id": booking["target_id"]},
+            {"$set": {"rating_avg": round(agg[0]["avg"], 2), "rating_count": agg[0]["count"]}},
+        )
+    return serialize_doc(doc)
+
+
+@router.get("/reviews/token/{token}")
+async def get_review_target(token: str):
+    """Public — given a token, return the booking's target title/image so the review page can show context."""
+    booking_id = decode_review_token(token)
+    if not booking_id:
+        raise HTTPException(status_code=400, detail="Lien invalide ou expiré")
+    booking = await db.bookings.find_one({"id": booking_id}, {"_id": 0})
+    if not booking:
+        raise HTTPException(status_code=404, detail="Réservation introuvable")
+    already = await db.reviews.find_one({"booking_id": booking_id}, {"_id": 0})
+    return {
+        "target_title": booking.get("target_title"),
+        "target_image": booking.get("target_image"),
+        "type": booking.get("type"),
+        "already_reviewed": bool(already),
+    }
 
 
 @router.get("/admin/reviews")

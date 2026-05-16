@@ -196,3 +196,17 @@ async def delete_promo_code(promo_id: str, request: Request):
     if res.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Code promo introuvable")
     return {"ok": True}
+
+
+# ---------- Manual trigger for the review-request email (testing) ----------
+@router.post("/bookings/{booking_id}/send-review-email")
+async def admin_send_review_email(booking_id: str, request: Request):
+    await require_admin(request, db)
+    booking = await db.bookings.find_one({"id": booking_id}, {"_id": 0})
+    if not booking:
+        raise HTTPException(status_code=404, detail="Réservation introuvable")
+    from scheduler import send_review_email_for_booking
+    ok = await send_review_email_for_booking(booking)
+    if not ok:
+        raise HTTPException(status_code=400, detail="Email manquant sur la réservation")
+    return {"ok": True}

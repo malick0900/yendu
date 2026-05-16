@@ -80,7 +80,19 @@ async def on_startup():
     except Exception as e:
         logger.error(f"Seed failed: {e}")
 
+    # Background scheduler (daily review-request emails)
+    try:
+        from scheduler import start_scheduler
+        start_scheduler()
+    except Exception as e:
+        logger.error(f"Scheduler start failed: {e}")
+
 
 @app.on_event("shutdown")
 async def on_shutdown():
+    try:
+        from scheduler import shutdown_scheduler
+        shutdown_scheduler()
+    except Exception:
+        pass
     client.close()

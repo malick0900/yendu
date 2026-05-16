@@ -18,6 +18,7 @@ import AdminPage from '@/pages/AdminPage';
 import AboutPage from '@/pages/AboutPage';
 import ContactPage from '@/pages/ContactPage';
 import FaqPage from '@/pages/FaqPage';
+import ReviewFromTokenPage from '@/pages/ReviewFromTokenPage';
 
 const ProtectedRoute = ({ children, role }) => {
   const { user, loading } = useAuth();
@@ -41,6 +42,7 @@ const AppRouter = () => (
       <Route path="/faq" element={<FaqPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/review" element={<ReviewFromTokenPage />} />
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
       <Route path="/admin/*" element={<ProtectedRoute role="ADMIN"><AdminPage /></ProtectedRoute>} />
       <Route path="*" element={<div className="min-h-[60vh] flex items-center justify-center"><div className="text-center"><h1 className="font-display text-3xl">Page introuvable</h1><p className="text-muted-foreground mt-2">Retournez à l’accueil</p></div></div>} />

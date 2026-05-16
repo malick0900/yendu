@@ -236,6 +236,7 @@ class Booking(BookingBase):
     discount_amount: int = 0  # FCFA deducted; gross = total_price + discount_amount
     status: str = "pending"  # pending | confirmed | cancelled | completed
     payment_status: str = "pending"  # pending | paid | refunded
+    review_email_sent_at: Optional[str] = None
     created_at: datetime = Field(default_factory=_now)
 
 
@@ -266,6 +267,13 @@ class PromoCode(BaseModel):
 
 class PromoValidateRequest(BaseModel):
     code: str
+
+
+# ---------- Review-from-token (post-stay email link) ----------
+class ReviewFromToken(BaseModel):
+    token: str
+    rating: int  # 1..5
+    comment: str
 
 
 # ---------- Reviews ----------

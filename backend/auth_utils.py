@@ -38,6 +38,28 @@ def decode_access_token(token: str) -> Optional[dict]:
         return None
 
 
+# ---------- Short-lived review tokens (signed JWT) ----------
+def create_review_token(booking_id: str, days: int = 30) -> str:
+    payload = {
+        "sub": booking_id,
+        "kind": "review",
+        "iat": datetime.now(timezone.utc),
+        "exp": datetime.now(timezone.utc) + timedelta(days=days),
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGO)
+
+
+def decode_review_token(token: str) -> Optional[str]:
+    """Return the booking_id if the token is a valid, non-expired review token."""
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGO])
+        if payload.get("kind") != "review":
+            return None
+        return payload.get("sub")
+    except Exception:
+        return None
+
+
 async def get_current_user(request: Request, db, required: bool = True) -> Optional[dict]:
     """Authenticate via session_token cookie (Google) OR Bearer JWT (email/password)."""
     token: Optional[str] = None
