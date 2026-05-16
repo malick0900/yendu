@@ -41,7 +41,7 @@ const RegisterPage = () => {
   return (
     <div className="min-h-[calc(100vh-160px)] grid grid-cols-1 lg:grid-cols-2">
       <div className="hidden lg:block relative">
-        <img src="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1400&auto=format&fit=crop" alt="Sénégal" className="absolute inset-0 h-full w-full object-cover" />
+        <img src="/assets/register-hero.jpg" alt="Cérémonie du thé sur une plage du Sénégal au coucher du soleil" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 p-10 text-white">
           <p className="text-xs uppercase tracking-[0.2em] text-[hsl(var(--premium))] font-semibold">Yendu</p>
