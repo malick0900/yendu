@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { resolveImage } from '@/components/ImageUpload';
+import { PhotoGallery } from '@/components/PhotoGallery';
 
 const ExperienceDetailPage = () => {
   const { id } = useParams();
@@ -77,12 +78,7 @@ const ExperienceDetailPage = () => {
         </button>
       </div>
 
-      <div className="mt-5 grid grid-cols-2 gap-2 rounded-3xl overflow-hidden h-[420px]">
-        <div className="col-span-2 md:col-span-1 row-span-2 relative"><img src={resolveImage(item.images?.[0])} alt={item.title} className="absolute inset-0 h-full w-full object-cover" /></div>
-        {item.images?.slice(1, 3).map((src, i) => (
-          <div key={i} className="hidden md:block relative"><img src={resolveImage(src)} alt="" className="absolute inset-0 h-full w-full object-cover" /></div>
-        ))}
-      </div>
+      <PhotoGallery images={item.images || []} alt={item.title} className="mt-5 h-[300px] sm:h-[420px]" />
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-10 mt-10">
         <div>
