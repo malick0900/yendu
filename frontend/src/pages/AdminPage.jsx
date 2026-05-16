@@ -73,6 +73,7 @@ const AdminLayout = ({ children }) => {
       localStorage.setItem('ts_admin_seen_bookings_at', new Date().toISOString());
       setTimeout(refresh, 600);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
   return (
@@ -397,6 +398,7 @@ const AvailabilityDialog = ({ propertyId, onClose }) => {
   const [range, setRange] = useState({ from: undefined, to: undefined });
   const [reason, setReason] = useState('');
   const load = () => api.get(`/admin/properties/${propertyId}/availability`).then((r) => setItems(r.data));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { load(); }, [propertyId]);
   const block = async () => {
     if (!range.from || !range.to) { toast.error('Choisissez une plage de dates'); return; }

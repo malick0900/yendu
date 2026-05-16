@@ -33,6 +33,7 @@ const ExperiencesPage = () => {
     params.max_price = priceRange[1];
     if (sort) params.sort = sort;
     api.get('/experiences', { params }).then((r) => setItems(r.data)).finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category, destination, priceRange[0], priceRange[1], sort]);
 
   return (

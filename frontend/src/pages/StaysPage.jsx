@@ -44,6 +44,7 @@ const StaysPage = () => {
     if (amenities.length) params.amenities = amenities.join(',');
     if (sort) params.sort = sort;
     api.get('/properties', { params }).then((r) => setItems(r.data)).finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [destination, type, priceRange[0], priceRange[1], guests, amenities, sort]);
 
   const toggleAmenity = (a) => setAmenities((prev) => prev.includes(a) ? prev.filter((x) => x !== a) : [...prev, a]);
