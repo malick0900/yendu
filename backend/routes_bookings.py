@@ -79,10 +79,10 @@ async def create_booking(payload: BookingCreate, request: Request):
     <p>Nous avons bien reçu votre demande pour <strong>{title}</strong>.</p>
     <p>Total : <strong>{total} FCFA</strong></p>
     <p>Notre équipe va revenir vers vous très vite pour confirmer.</p>
-    <p style="color:#888">— L'équipe Teranga Stay</p>
+    <p style="color:#888">— L'équipe Yendu</p>
     """
     try:
-        await enqueue_notification(user["email"], "Votre réservation Teranga Stay", html, type_="booking_created", meta={"booking_id": doc["id"]})
+        await enqueue_notification(user["email"], "Votre réservation Yendu", html, type_="booking_created", meta={"booking_id": doc["id"]})
     except Exception:
         pass
     return serialize_doc(doc)

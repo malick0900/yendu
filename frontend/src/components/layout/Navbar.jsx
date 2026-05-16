@@ -51,8 +51,8 @@ export const Navbar = () => {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-24 flex items-center justify-between gap-4">
         <Link to="/" data-testid="navbar-logo-link" className="flex items-center gap-2 group">
-          <img src="/assets/teranga-stay-logo.png" alt="Teranga Stay" className="h-12 sm:h-14 w-auto object-contain rounded-lg" />
-          <span className="sr-only">Teranga Stay</span>
+          <img src="/assets/yendu-logo.png" alt="Yendu" className="h-12 sm:h-14 w-auto object-contain rounded-lg" />
+          <span className="sr-only">Yendu</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-7 text-sm">

@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 from fastapi import HTTPException, Request, status
 from typing import Optional
 
-JWT_SECRET = os.environ.get("JWT_SECRET", "teranga-stay-dev-secret-change-me")
+JWT_SECRET = os.environ.get("JWT_SECRET", "yendu-dev-secret-change-me")
 JWT_ALGO = "HS256"
 JWT_EXPIRES_HOURS = 24 * 7  # 7 days
 

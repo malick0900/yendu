@@ -196,7 +196,7 @@ const StayDetailPage = () => {
               <div className="mt-5 text-sm space-y-2">
                 <div className="flex justify-between"><span>{formatXOF(item.price_per_night)} x {nights} nuit{nights > 1 ? 's' : ''}</span><span>{formatXOF(total)}</span></div>
                 <div className="flex justify-between pt-2 border-t border-border font-semibold text-base"><span>Total</span><span>{formatXOF(total)}</span></div>
-                <p className="text-xs text-muted-foreground pt-2">Paiement manuel — confirmation par l’équipe Teranga Stay.</p>
+                <p className="text-xs text-muted-foreground pt-2">Paiement manuel — confirmation par l’équipe Yendu.</p>
               </div>
             )}
           </div>

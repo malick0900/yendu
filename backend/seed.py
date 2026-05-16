@@ -1,4 +1,4 @@
-"""Seed Teranga Stay with realistic demo content (admin user, destinations, properties, experiences)."""
+"""Seed Yendu with realistic demo content (admin user, destinations, properties, experiences)."""
 import asyncio
 from datetime import datetime, timezone
 import uuid

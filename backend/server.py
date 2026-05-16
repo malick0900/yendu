@@ -14,12 +14,12 @@ import storage as st
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("teranga")
 
-app = FastAPI(title="Teranga Stay API", version="1.0")
+app = FastAPI(title="Yendu API", version="1.0")
 
 
 @app.get("/api/")
 async def root():
-    return {"message": "Teranga Stay API", "status": "ok"}
+    return {"message": "Yendu API", "status": "ok"}
 
 
 @app.get("/api/health")

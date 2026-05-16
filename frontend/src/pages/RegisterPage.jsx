@@ -29,7 +29,7 @@ const RegisterPage = () => {
     setError(''); setLoading(true);
     try {
       await registerEmail(form);
-      toast.success('Bienvenue chez Teranga Stay !');
+      toast.success('Bienvenue chez Yendu !');
       navigate('/dashboard');
     } catch (e) {
       setError(e?.response?.data?.detail || 'Inscription impossible');
@@ -42,7 +42,7 @@ const RegisterPage = () => {
         <img src="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1400&auto=format&fit=crop" alt="Sénégal" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 p-10 text-white">
-          <p className="text-xs uppercase tracking-[0.2em] text-[hsl(var(--premium))] font-semibold">Teranga Stay</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-[hsl(var(--premium))] font-semibold">Yendu</p>
           <h2 className="font-display text-3xl mt-2 max-w-md">Créez votre compte et vivez le Sénégal autrement.</h2>
         </div>
       </div>

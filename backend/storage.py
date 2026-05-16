@@ -6,7 +6,7 @@ Env vars:
   R2_ACCESS_KEY_ID    R2 token access key
   R2_SECRET_ACCESS_KEY
   R2_ENDPOINT         optional override; defaults to https://<account>.r2.cloudflarestorage.com
-  APP_NAME            prefix for object keys (default: teranga-stay)
+  APP_NAME            prefix for object keys (default: yendu)
 
 Falls back to AWS S3 if R2_* env vars absent and AWS_* are present (boto3 picks them up).
 """
@@ -21,7 +21,7 @@ from botocore.exceptions import BotoCoreError, ClientError
 
 logger = logging.getLogger("teranga.storage")
 
-APP_NAME = os.environ.get("APP_NAME", "teranga-stay")
+APP_NAME = os.environ.get("APP_NAME", "yendu")
 
 MIME_TYPES = {
     "jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png",
