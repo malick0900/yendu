@@ -81,6 +81,29 @@ git push -u origin main
 
 (If you don't use `gh`, create the repo manually on GitHub then `git remote add origin <url> && git push -u origin main`.)
 
+## 6b. Custom domain — `yendou.sn` (DNS managed at OVH)
+
+Layout: apex `yendou.sn` (+ `www`) → Vercel (site) · `api.yendou.sn` → Railway (API).
+
+1. **Vercel → Project → Settings → Domains** → add `yendou.sn` and `www.yendou.sn`
+   (accept the suggested `www` → apex redirect). Vercel shows the exact DNS records.
+2. **Railway → backend service → Settings → Networking → Custom Domain** → add
+   `api.yendou.sn`. Railway gives you a CNAME target like `xxxx.up.railway.app`.
+3. **OVH → Domaines → yendou.sn → Zone DNS** → create:
+
+   | Sous-domaine | Type  | Cible                       |
+   |--------------|-------|-----------------------------|
+   | (apex/vide)  | A     | `76.76.21.21` (Vercel value)|
+   | `www`        | CNAME | `cname.vercel-dns.com.`      |
+   | `api`        | CNAME | `xxxx.up.railway.app.`       |
+
+   Keep the trailing dot on CNAME targets. HTTPS certs are issued automatically.
+4. Update env vars (then redeploy each side):
+   - Railway: `CORS_ORIGINS=https://yendou.sn,https://www.yendou.sn` and `FRONTEND_URL=https://yendou.sn`
+   - Vercel: `REACT_APP_BACKEND_URL=https://api.yendou.sn` → **Redeploy** (REACT_APP_* is baked at build).
+5. **Google Cloud → OAuth client → Authorized JavaScript origins** → add
+   `https://yendou.sn` and `https://www.yendou.sn`.
+
 ## 7. Post-deploy checklist
 
 - [ ] `GET /api/health` returns 200 on Railway
