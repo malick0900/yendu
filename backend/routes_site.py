@@ -102,7 +102,7 @@ DEFAULT_SITE_CONTENT = {
     "about_title": "L’hospitalité, fil rouge de Yendu.",
     "about_kicker": "Notre histoire",
     "about_text": "Yendu est né d’une conviction : un voyage réussi est un voyage vécu. Notre mission est de connecter les voyageurs aux meilleures adresses du Sénégal — logements premium et expériences immersives — dans une plateforme exigeante sur la qualité et chaleureuse comme une journée à Saly.\n\nChaque logement et chaque expérience est sélectionné par notre équipe. Nous ne sommes pas une marketplace ouverte : nous publions, nous validons, nous vous accompagnons. C’est notre garantie d’un séjour sans accroc.\n\nVision : devenir la référence du voyage premium en Afrique de l’Ouest — à commencer par le Sénégal, terre de Teranga.",
-    "contact_email": "contact@terangastay.sn",
+    "contact_email": "contact@yendou.sn",
     "contact_phone": "+221 33 800 00 00",
     "contact_address": "Almadies, Dakar, Sénégal",
     "faqs": [
@@ -286,7 +286,7 @@ def _smtp_configured() -> bool:
     return bool(os.environ.get("SMTP_HOST")) and bool(os.environ.get("SMTP_USER"))
 
 
-def _send_smtp(to_email: str, subject: str, html: str):
+def _send_smtp(to_email: str, subject: str, html: str, reply_to: Optional[str] = None):
     host = os.environ.get("SMTP_HOST", "")
     port = int(os.environ.get("SMTP_PORT", "587"))
     user = os.environ.get("SMTP_USER", "")
@@ -296,6 +296,8 @@ def _send_smtp(to_email: str, subject: str, html: str):
     msg["Subject"] = subject
     msg["From"] = sender
     msg["To"] = to_email
+    if reply_to:
+        msg["Reply-To"] = reply_to
     msg.attach(MIMEText(html, "html"))
     with smtplib.SMTP(host, port, timeout=20) as server:
         server.starttls()
@@ -303,13 +305,13 @@ def _send_smtp(to_email: str, subject: str, html: str):
         server.sendmail(sender, [to_email], msg.as_string())
 
 
-async def enqueue_notification(to_email: str, subject: str, html: str, type_: str = "generic", meta: Optional[dict] = None):
+async def enqueue_notification(to_email: str, subject: str, html: str, type_: str = "generic", meta: Optional[dict] = None, reply_to: Optional[str] = None):
     status = "queued"
     error: Optional[str] = None
     sent = False
     if _smtp_configured():
         try:
-            _send_smtp(to_email, subject, html)
+            _send_smtp(to_email, subject, html, reply_to=reply_to)
             status = "sent"; sent = True
         except Exception as e:
             status = "failed"; error = str(e)[:300]
@@ -335,3 +337,54 @@ async def list_notifications(request: Request, limit: int = 100):
 async def notif_status(request: Request):
     await require_admin(request, db)
     return {"smtp_configured": _smtp_configured(), "from": os.environ.get("MAIL_FROM", "")}
+
+
+# ---------- PUBLIC CONTACT FORM ----------
+from html import escape as _esc
+from pydantic import EmailStr
+
+
+class ContactMessage(BaseModel):
+    name: str
+    email: EmailStr
+    message: str
+
+
+async def _contact_recipient() -> str:
+    """Where contact-form messages are delivered. Env override > CMS value > default."""
+    env = os.environ.get("CONTACT_EMAIL")
+    if env:
+        return env
+    doc = await db.site_content.find_one({"key": "main"}, {"_id": 0})
+    content = (doc or {}).get("content", {}) if doc else {}
+    return content.get("contact_email") or DEFAULT_SITE_CONTENT["contact_email"]
+
+
+@router.post("/contact")
+async def submit_contact(payload: ContactMessage):
+    name = payload.name.strip()
+    message = payload.message.strip()
+    if not name or len(name) > 120:
+        raise HTTPException(status_code=400, detail="Nom invalide")
+    if not message or len(message) > 5000:
+        raise HTTPException(status_code=400, detail="Message invalide")
+
+    recipient = await _contact_recipient()
+    subject = f"[Yendu] Nouveau message de {name}"
+    body = _esc(message).replace("\n", "<br>")
+    html = (
+        '<div style="font-family:Arial,sans-serif;font-size:14px;color:#222;line-height:1.5">'
+        "<h2 style=\"margin:0 0 12px\">Nouveau message de contact</h2>"
+        f"<p><strong>Nom&nbsp;:</strong> {_esc(name)}</p>"
+        f"<p><strong>Email&nbsp;:</strong> {_esc(payload.email)}</p>"
+        "<p><strong>Message&nbsp;:</strong></p>"
+        f'<div style="padding:12px;background:#f6f6f6;border-radius:8px">{body}</div>'
+        "</div>"
+    )
+    status = await enqueue_notification(
+        recipient, subject, html,
+        type_="contact",
+        meta={"from_name": name, "from_email": str(payload.email)},
+        reply_to=str(payload.email),
+    )
+    return {"ok": True, "status": status}

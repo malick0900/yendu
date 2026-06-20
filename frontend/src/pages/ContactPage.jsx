@@ -6,11 +6,25 @@ import { Textarea } from '@/components/ui/textarea';
 import { Mail, Phone, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSiteContent } from '@/contexts/SiteContentContext';
+import { api } from '@/lib/api';
 
 const ContactPage = () => {
   const { content } = useSiteContent();
   const [form, setForm] = useState({ name: '', email: '', message: '' });
-  const submit = (e) => { e.preventDefault(); toast.success('Message envoyé · Nous vous répondons sous 24h'); setForm({ name: '', email: '', message: '' }); };
+  const [loading, setLoading] = useState(false);
+  const submit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await api.post('/contact', form);
+      toast.success('Message envoyé · Nous vous répondons sous 24h');
+      setForm({ name: '', email: '', message: '' });
+    } catch (err) {
+      toast.error(err?.response?.data?.detail || "Échec de l'envoi · réessayez ou écrivez-nous directement");
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-14 grid grid-cols-1 lg:grid-cols-2 gap-10">
       <div>
@@ -18,7 +32,7 @@ const ContactPage = () => {
         <h1 className="font-display text-4xl mt-2">Parlons de votre voyage.</h1>
         <p className="text-muted-foreground mt-3 max-w-md">Notre équipe est là pour vous aider à organiser votre séjour, sur-mesure si besoin.</p>
         <ul className="mt-8 space-y-3 text-sm">
-          <li className="flex items-center gap-3"><div className="h-9 w-9 rounded-full bg-muted inline-flex items-center justify-center"><Mail className="h-4 w-4" /></div> {content?.contact_email || 'contact@terangastay.sn'}</li>
+          <li className="flex items-center gap-3"><div className="h-9 w-9 rounded-full bg-muted inline-flex items-center justify-center"><Mail className="h-4 w-4" /></div> {content?.contact_email || 'contact@yendou.sn'}</li>
           <li className="flex items-center gap-3"><div className="h-9 w-9 rounded-full bg-muted inline-flex items-center justify-center"><Phone className="h-4 w-4" /></div> {content?.contact_phone || '+221 33 800 00 00'}</li>
           <li className="flex items-center gap-3"><div className="h-9 w-9 rounded-full bg-muted inline-flex items-center justify-center"><MapPin className="h-4 w-4" /></div> {content?.contact_address || 'Almadies, Dakar, Sénégal'}</li>
         </ul>
@@ -27,7 +41,7 @@ const ContactPage = () => {
         <div><Label>Nom</Label><Input required value={form.name} onChange={(e) => setForm({...form, name: e.target.value})} className="mt-1 h-12 rounded-xl" /></div>
         <div><Label>Email</Label><Input required type="email" value={form.email} onChange={(e) => setForm({...form, email: e.target.value})} className="mt-1 h-12 rounded-xl" /></div>
         <div><Label>Message</Label><Textarea required rows={5} value={form.message} onChange={(e) => setForm({...form, message: e.target.value})} className="mt-1 rounded-xl" /></div>
-        <Button type="submit" className="w-full h-12 rounded-xl bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/90" data-testid="contact-submit">Envoyer</Button>
+        <Button type="submit" disabled={loading} className="w-full h-12 rounded-xl bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))]/90" data-testid="contact-submit">{loading ? 'Envoi…' : 'Envoyer'}</Button>
       </form>
     </div>
   );

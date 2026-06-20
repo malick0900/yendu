@@ -41,7 +41,7 @@ export const Footer = () => {
         <div>
           <h4 className="font-semibold text-sm mb-3">{t('footer.contact_us')}</h4>
           <ul className="space-y-2 text-sm text-white/75">
-            <li className="flex items-center gap-2"><Mail className="h-3.5 w-3.5" /> {content?.contact_email || 'contact@terangastay.sn'}</li>
+            <li className="flex items-center gap-2"><Mail className="h-3.5 w-3.5" /> {content?.contact_email || 'contact@yendou.sn'}</li>
             <li className="flex items-center gap-2"><MapPin className="h-3.5 w-3.5" /> {content?.contact_address || 'Almadies, Dakar, Sénégal'}</li>
           </ul>
         </div>
