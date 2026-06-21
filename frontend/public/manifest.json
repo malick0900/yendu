@@ -1,0 +1,18 @@
+{
+  "short_name": "Yendou",
+  "name": "Yendou — Logements & Expériences au Sénégal",
+  "description": "Logements premium et expériences locales au Sénégal.",
+  "icons": [
+    {
+      "src": "favicon.png?v=2",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#0c3d2e",
+  "background_color": "#ffffff",
+  "lang": "fr"
+}

@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useGoogleSignIn, GOOGLE_CLIENT_ID } from '@/hooks/useGoogleSignIn';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import Seo from '@/components/Seo';
 
 const LoginPage = () => {
   const { loginEmail, setUser } = useAuth();
@@ -48,6 +49,7 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-[calc(100vh-160px)] grid grid-cols-1 lg:grid-cols-2">
+      <Seo title="Connexion" noindex path="/login" />
       <div className="hidden lg:block relative">
         <img src="https://images.unsplash.com/photo-1716997338016-93b456b3ea8f?w=1400&auto=format&fit=crop" alt="Dakar" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />

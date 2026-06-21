@@ -4,6 +4,7 @@
   "installCommand": "yarn install",
   "framework": "create-react-app",
   "rewrites": [
+    { "source": "/sitemap.xml", "destination": "https://api.yendou.sn/api/sitemap.xml" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [

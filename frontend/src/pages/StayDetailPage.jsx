@@ -18,6 +18,7 @@ import { format, differenceInCalendarDays } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import L from 'leaflet';
 import { resolveImage } from '@/components/ImageUpload';
+import Seo, { SITE_URL } from '@/components/Seo';
 
 const markerIcon = L.divIcon({ className: 'ts-marker-wrap', html: '<div class="ts-marker ts-marker--active"><span class="ts-marker__dot"></span>Ici</div>', iconSize: [60, 32], iconAnchor: [30, 16] });
 
@@ -124,9 +125,21 @@ const StayDetailPage = () => {
   }
 
   const images = item.images || [];
+  const seoImage = resolveImage(images[0]);
+  const seoDesc = (item.description || `${item.title} à ${item.city || 'Sénégal'} — réservez sur Yendou.`).slice(0, 160);
+  const stayJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: item.title,
+    description: item.description || seoDesc,
+    image: images.map(resolveImage).filter(Boolean),
+    ...(item.rating_count > 0 ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: item.rating_avg, reviewCount: item.rating_count } } : {}),
+    offers: { '@type': 'Offer', price: item.price_per_night, priceCurrency: 'XOF', availability: 'https://schema.org/InStock', url: `${SITE_URL}/stays/${id}` },
+  };
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <Seo title={item.title} description={seoDesc} image={seoImage} type="product" path={`/stays/${id}`} jsonLd={stayJsonLd} />
       <h1 data-testid="stay-title" className="font-display text-3xl sm:text-4xl tracking-tight">{item.title}</h1>
       <div className="flex flex-wrap items-center gap-3 text-sm mt-2 text-muted-foreground">
         <span className="inline-flex items-center gap-1"><Star className="h-4 w-4 fill-foreground text-foreground" /> <strong className="text-foreground">{item.rating_avg?.toFixed(1) || '—'}</strong> ({item.rating_count} avis)</span>

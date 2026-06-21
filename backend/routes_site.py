@@ -430,3 +430,46 @@ async def submit_contact(payload: ContactMessage):
         reply_to=str(payload.email),
     )
     return {"ok": True, "status": status}
+
+
+# ---------- SITEMAP ----------
+@router.get("/sitemap.xml")
+async def sitemap_xml():
+    """Dynamic sitemap: static pages + every published listing and destination."""
+    base = os.environ.get("FRONTEND_URL", "https://yendou.sn").rstrip("/")
+
+    def _url(path: str, *, priority: str = "0.7", changefreq: str = "weekly") -> str:
+        loc = _esc(f"{base}{path}")
+        return (
+            f"<url><loc>{loc}</loc>"
+            f"<changefreq>{changefreq}</changefreq>"
+            f"<priority>{priority}</priority></url>"
+        )
+
+    parts: List[str] = [
+        _url("/", priority="1.0", changefreq="daily"),
+        _url("/stays", priority="0.9", changefreq="daily"),
+        _url("/experiences", priority="0.9", changefreq="daily"),
+        _url("/about", priority="0.5", changefreq="monthly"),
+        _url("/contact", priority="0.5", changefreq="monthly"),
+        _url("/faq", priority="0.5", changefreq="monthly"),
+    ]
+
+    try:
+        props = await db.properties.find({"is_published": True}, {"_id": 0, "id": 1}).to_list(2000)
+        parts += [_url(f"/stays/{p['id']}", priority="0.8") for p in props if p.get("id")]
+        exps = await db.experiences.find({"is_published": True}, {"_id": 0, "id": 1}).to_list(2000)
+        parts += [_url(f"/experiences/{e['id']}", priority="0.8") for e in exps if e.get("id")]
+        dests = await db.destinations.find({}, {"_id": 0, "slug": 1}).to_list(500)
+        parts += [_url(f"/destinations/{d['slug']}", priority="0.6") for d in dests if d.get("slug")]
+    except Exception:
+        # Always return at least the static URLs.
+        pass
+
+    xml = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+        + "".join(parts)
+        + "</urlset>"
+    )
+    return Response(content=xml, media_type="application/xml")

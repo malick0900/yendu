@@ -5,6 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Star, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
+import Seo from '@/components/Seo';
+
+const ReviewSeo = () => <Seo title="Votre avis" noindex path="/review" />;
 
 const ReviewFromTokenPage = () => {
   const [params] = useSearchParams();
@@ -44,6 +47,7 @@ const ReviewFromTokenPage = () => {
   if (error) {
     return (
       <div className="max-w-md mx-auto px-4 py-16 text-center">
+        <ReviewSeo />
         <h1 className="font-display text-2xl">{error}</h1>
         <p className="text-sm text-muted-foreground mt-2">Si vous pensez qu'il s'agit d'une erreur, contactez-nous.</p>
         <Link to="/" className="inline-block mt-6 text-[hsl(var(--primary))] underline">Retour à l'accueil</Link>
@@ -52,12 +56,13 @@ const ReviewFromTokenPage = () => {
   }
 
   if (!target) {
-    return <div className="max-w-md mx-auto px-4 py-16 text-center text-muted-foreground">Chargement…</div>;
+    return <div className="max-w-md mx-auto px-4 py-16 text-center text-muted-foreground"><ReviewSeo />Chargement…</div>;
   }
 
   if (done) {
     return (
       <div className="max-w-md mx-auto px-4 py-16 text-center">
+        <ReviewSeo />
         <CheckCircle2 className="h-14 w-14 mx-auto text-[hsl(var(--primary))]" />
         <h1 className="font-display text-3xl mt-4">Merci pour votre avis !</h1>
         <p className="text-sm text-muted-foreground mt-2">Il aidera les futurs voyageurs à choisir leur prochain séjour.</p>
@@ -68,6 +73,7 @@ const ReviewFromTokenPage = () => {
 
   return (
     <div className="max-w-md mx-auto px-4 py-10">
+      <ReviewSeo />
       <h1 className="font-display text-3xl">Notez votre expérience</h1>
       {target.target_image && (
         <img src={target.target_image} alt={target.target_title} className="mt-5 rounded-2xl w-full aspect-video object-cover" />

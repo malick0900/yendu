@@ -7,6 +7,7 @@ import { Mail, Phone, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSiteContent } from '@/contexts/SiteContentContext';
 import { api } from '@/lib/api';
+import Seo from '@/components/Seo';
 
 const ContactPage = () => {
   const { content } = useSiteContent();
@@ -27,6 +28,7 @@ const ContactPage = () => {
   };
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-14 grid grid-cols-1 lg:grid-cols-2 gap-10">
+      <Seo title="Nous contacter" description="Une question ou un projet de séjour sur-mesure ? Contactez l'équipe Yendou." path="/contact" />
       <div>
         <p className="text-[11px] uppercase tracking-[0.2em] text-[hsl(var(--primary))] font-semibold">Nous contacter</p>
         <h1 className="font-display text-4xl mt-2">Parlons de votre voyage.</h1>

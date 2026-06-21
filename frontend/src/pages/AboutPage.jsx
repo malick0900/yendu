@@ -2,12 +2,14 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useSiteContent } from '@/contexts/SiteContentContext';
+import Seo from '@/components/Seo';
 
 const AboutPage = () => {
   const { content } = useSiteContent();
   if (!content) return null;
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+      <Seo title="À propos" description="Yendou connecte les voyageurs aux meilleures adresses du Sénégal : logements premium et expériences locales, dans l'esprit du Teranga." path="/about" />
       <p className="text-[11px] uppercase tracking-[0.2em] text-[hsl(var(--primary))] font-semibold">{content.about_kicker}</p>
       <h1 className="font-display text-4xl sm:text-5xl mt-2">{content.about_title}</h1>
       <div className="prose prose-lg max-w-none mt-6 text-foreground/85">

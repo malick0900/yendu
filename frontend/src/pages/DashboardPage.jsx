@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import Seo from '@/components/Seo';
 import { Textarea } from '@/components/ui/textarea';
 import { Star, Heart, CalendarDays, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
@@ -89,6 +90,7 @@ const DashboardPage = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <Seo title="Mon espace" noindex path="/dashboard" />
       <div className="flex items-center gap-4 mb-8">
         <Avatar className="h-14 w-14">
           <AvatarImage src={user?.avatar || ''} />

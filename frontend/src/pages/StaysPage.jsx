@@ -11,6 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SlidersHorizontal, MapPin, List, Map as MapIcon } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import Seo from '@/components/Seo';
 
 const useQuery = () => {
   const { search } = useLocation();
@@ -52,6 +53,7 @@ const StaysPage = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <Seo title="Logements premium au Sénégal" description="Villas, appartements et maisons d'hôtes sélectionnés au Sénégal. Réservez votre séjour avec Yendou." path="/stays" />
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
         <div>
           <h1 className="font-display text-3xl sm:text-4xl">Logements au Sénégal</h1>

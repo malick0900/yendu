@@ -5,6 +5,7 @@ import { ExperienceCard } from '@/components/ExperienceCard';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Skeleton } from '@/components/ui/skeleton';
+import Seo from '@/components/Seo';
 
 const useQuery = () => {
   const { search } = useLocation();
@@ -38,6 +39,7 @@ const ExperiencesPage = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <Seo title="Expériences locales au Sénégal" description="Culture, gastronomie, aventure : vivez des expériences locales authentiques au Sénégal avec Yendou." path="/experiences" />
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
         <div>
           <h1 className="font-display text-3xl sm:text-4xl">Expériences locales</h1>
