@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Sparkles } from 'lucide-react';
 import { resolveImage } from '@/components/ImageUpload';
+import Seo from '@/components/Seo';
 
 const DestinationPage = () => {
   const { slug } = useParams();
@@ -28,6 +29,12 @@ const DestinationPage = () => {
 
   return (
     <div data-testid="destination-page">
+      <Seo
+        title={`${destination.name} — Logements & Expériences`}
+        description={(destination.short_description || destination.description || `Découvrez ${destination.name} avec Yendou.`).slice(0, 160)}
+        image={resolveImage(destination.hero_image)}
+        path={`/destinations/${slug}`}
+      />
       <section className="relative h-[60vh] min-h-[420px] hero-overlay overflow-hidden">
         <img src={resolveImage(destination.hero_image)} alt={destination.name} className="absolute inset-0 h-full w-full object-cover" />
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col justify-end pb-10">

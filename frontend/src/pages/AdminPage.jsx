@@ -13,6 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, BarChart, Bar } from 'recharts';
+import Seo from '@/components/Seo';
 import { LayoutDashboard, Building2, Sparkles, CalendarCheck, Users, MessageSquare, Plus, Pencil, Trash2, FileEdit, MapPin, FileDown, Activity, Bell, Calendar as CalIcon, Tag } from 'lucide-react';
 import { toast } from 'sonner';
 import { ImageUpload, resolveImage } from '@/components/ImageUpload';
@@ -79,6 +80,7 @@ const AdminLayout = ({ children }) => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <Seo title="Administration" noindex path="/admin" />
       <h1 className="font-display text-3xl">Administration</h1>
       <p className="text-sm text-muted-foreground">Gérez tout le contenu, les réservations et le site Yendou.</p>
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6">

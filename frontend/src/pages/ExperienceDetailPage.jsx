@@ -15,6 +15,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { resolveImage } from '@/components/ImageUpload';
 import { PhotoGallery } from '@/components/PhotoGallery';
+import Seo, { SITE_URL } from '@/components/Seo';
 
 const ExperienceDetailPage = () => {
   const { id } = useParams();
@@ -85,8 +86,21 @@ const ExperienceDetailPage = () => {
   const discount = promo ? Math.floor((gross * promo.discount_percent) / 100) : 0;
   const total = gross - discount;
 
+  const expImages = item.images || [];
+  const expDesc = (item.description || `${item.title} — une expérience à vivre au Sénégal avec Yendou.`).slice(0, 160);
+  const expJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: item.title,
+    description: item.description || expDesc,
+    image: expImages.map(resolveImage).filter(Boolean),
+    ...(item.rating_count > 0 ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: item.rating_avg, reviewCount: item.rating_count } } : {}),
+    offers: { '@type': 'Offer', price: item.price, priceCurrency: 'XOF', availability: 'https://schema.org/InStock', url: `${SITE_URL}/experiences/${id}` },
+  };
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <Seo title={item.title} description={expDesc} image={resolveImage(expImages[0])} type="product" path={`/experiences/${id}`} jsonLd={expJsonLd} />
       <h1 data-testid="experience-title" className="font-display text-3xl sm:text-4xl tracking-tight">{item.title}</h1>
       <div className="flex flex-wrap items-center gap-3 text-sm mt-2 text-muted-foreground">
         {cat && <span className="inline-flex items-center gap-1 text-foreground">{cat.icon} {cat.label}</span>}

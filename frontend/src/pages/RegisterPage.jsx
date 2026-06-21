@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useGoogleSignIn, GOOGLE_CLIENT_ID } from '@/hooks/useGoogleSignIn';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import Seo from '@/components/Seo';
 
 const RegisterPage = () => {
   const { registerEmail, setUser } = useAuth();
@@ -40,6 +41,7 @@ const RegisterPage = () => {
 
   return (
     <div className="min-h-[calc(100vh-160px)] grid grid-cols-1 lg:grid-cols-2">
+      <Seo title="Créer un compte" noindex path="/register" />
       <div className="hidden lg:block relative">
         <img src="/assets/register-hero.jpg" alt="Cérémonie du thé sur une plage du Sénégal au coucher du soleil" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />

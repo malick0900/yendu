@@ -9,6 +9,31 @@ import { ArrowRight, Star, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSiteContent } from '@/contexts/SiteContentContext';
 import { resolveImage } from '@/components/ImageUpload';
+import Seo, { SITE_URL } from '@/components/Seo';
+
+const HOME_JSONLD = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'Yendou',
+    url: SITE_URL,
+    logo: `${SITE_URL}/assets/yendou-logo.png`,
+    email: 'contact@yendou.sn',
+    areaServed: 'SN',
+    slogan: "L'expérience de la qualité.",
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Yendou',
+    url: SITE_URL,
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: `${SITE_URL}/stays?destination={search_term_string}`,
+      'query-input': 'required name=search_term_string',
+    },
+  },
+];
 
 const HomePage = () => {
   const { content } = useSiteContent();
@@ -28,6 +53,12 @@ const HomePage = () => {
 
   return (
     <div data-testid="homepage-root">
+      <Seo
+        description={content.hero_subtitle}
+        image={heroImg}
+        path="/"
+        jsonLd={HOME_JSONLD}
+      />
       <section className="relative h-[88vh] min-h-[640px] hero-overlay overflow-hidden">
         <img src={heroImg} alt="Sénégal" className="absolute inset-0 h-full w-full object-cover" />
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col justify-end pb-12 sm:pb-16">
