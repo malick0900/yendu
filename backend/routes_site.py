@@ -93,22 +93,22 @@ DEFAULT_SITE_CONTENT = {
     "teranga_title": "L’hospitalité fait notre identité.",
     "teranga_text": "« Teranga », en wolof, signifie hospitalité. C’est cette valeur fondatrice que nous portons à chaque étape : du choix des logements aux expériences locales, en passant par l’équipe à votre service.",
     "teranga_image": "https://images.unsplash.com/photo-1545912452-8aea7e25a3d3?w=1400&auto=format&fit=crop",
-    "testimonials_title": "Ils ont vécu Yendu",
+    "testimonials_title": "Ils ont vécu Yendou",
     "testimonials": [
         {"name": "Camille L.", "city": "Paris", "text": "Une villa de rêve aux Almadies, des expériences vraiment immersives. Je reviens !", "img": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&auto=format&fit=crop", "rating": 5},
         {"name": "Mohamed K.", "city": "Casablanca", "text": "Le coucher de soleil yoga à Saly… indescriptible. Service au top de bout en bout.", "img": "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=200&auto=format&fit=crop", "rating": 5},
         {"name": "Sophie M.", "city": "Bruxelles", "text": "Saint-Louis hors saison c’est magique. La maison coloniale recommendée était parfaite.", "img": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop", "rating": 5},
     ],
-    "about_title": "L’hospitalité, fil rouge de Yendu.",
+    "about_title": "L’hospitalité, fil rouge de Yendou.",
     "about_kicker": "Notre histoire",
-    "about_text": "Yendu est né d’une conviction : un voyage réussi est un voyage vécu. Notre mission est de connecter les voyageurs aux meilleures adresses du Sénégal — logements premium et expériences immersives — dans une plateforme exigeante sur la qualité et chaleureuse comme une journée à Saly.\n\nChaque logement et chaque expérience est sélectionné par notre équipe. Nous ne sommes pas une marketplace ouverte : nous publions, nous validons, nous vous accompagnons. C’est notre garantie d’un séjour sans accroc.\n\nVision : devenir la référence du voyage premium en Afrique de l’Ouest — à commencer par le Sénégal, terre de Teranga.",
+    "about_text": "Yendou est né d’une conviction : un voyage réussi est un voyage vécu. Notre mission est de connecter les voyageurs aux meilleures adresses du Sénégal — logements premium et expériences immersives — dans une plateforme exigeante sur la qualité et chaleureuse comme une journée à Saly.\n\nChaque logement et chaque expérience est sélectionné par notre équipe. Nous ne sommes pas une marketplace ouverte : nous publions, nous validons, nous vous accompagnons. C’est notre garantie d’un séjour sans accroc.\n\nVision : devenir la référence du voyage premium en Afrique de l’Ouest — à commencer par le Sénégal, terre de Teranga.",
     "contact_email": "contact@yendou.sn",
     "contact_phone": "+221 33 800 00 00",
     "contact_address": "Almadies, Dakar, Sénégal",
     "faqs": [
-        {"q": "Comment fonctionne le paiement ?", "a": "Pour le MVP, le paiement est confirmé manuellement par notre équipe Yendu après votre réservation. Nous vous contacterons pour finaliser la transaction."},
+        {"q": "Comment fonctionne le paiement ?", "a": "Pour le MVP, le paiement est confirmé manuellement par notre équipe Yendou après votre réservation. Nous vous contacterons pour finaliser la transaction."},
         {"q": "Puis-je annuler ma réservation ?", "a": "Oui, tant que la réservation est « en attente », contactez-nous pour l’annuler sans frais."},
-        {"q": "Qui sélectionne les logements ?", "a": "Tous les logements et expériences sont sélectionnés par notre équipe. Yendu n’est pas une marketplace ouverte."},
+        {"q": "Qui sélectionne les logements ?", "a": "Tous les logements et expériences sont sélectionnés par notre équipe. Yendou n’est pas une marketplace ouverte."},
         {"q": "Proposez-vous des voyages sur-mesure ?", "a": "Oui, contactez-nous via le formulaire et nous construirons votre séjour avec vous."},
         {"q": "Comment laisser un avis ?", "a": "Après confirmation de votre réservation, vous pouvez laisser un avis depuis votre tableau de bord."},
     ],
@@ -412,7 +412,7 @@ async def submit_contact(payload: ContactMessage):
         raise HTTPException(status_code=400, detail="Message invalide")
 
     recipient = await _contact_recipient()
-    subject = f"[Yendu] Nouveau message de {name}"
+    subject = f"[Yendou] Nouveau message de {name}"
     body = _esc(message).replace("\n", "<br>")
     html = (
         '<div style="font-family:Arial,sans-serif;font-size:14px;color:#222;line-height:1.5">'

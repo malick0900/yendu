@@ -17,7 +17,7 @@ logger = logging.getLogger("yendu.scheduler")
 
 DAYS_AFTER_STAY = int(os.environ.get("REVIEW_EMAIL_DELAY_DAYS", "2"))
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://yendu.vercel.app")
-FROM_NAME = "Yendu"
+FROM_NAME = "Yendou"
 
 
 def _review_email_html(target_title: str, target_image: str | None, review_url: str, traveler_name: str) -> str:
@@ -36,7 +36,7 @@ def _review_email_html(target_title: str, target_image: str | None, review_url: 
   </p>
   <p style="font-size:12px;color:#888">Si le bouton ne fonctionne pas, copiez ce lien :<br><span style="word-break:break-all">{review_url}</span></p>
   <hr style="border:none;border-top:1px solid #eee;margin:24px 0">
-  <p style="font-size:12px;color:#888;text-align:center">— L'équipe Yendu</p>
+  <p style="font-size:12px;color:#888;text-align:center">— L'équipe Yendou</p>
 </body></html>
 """
 
@@ -74,7 +74,7 @@ async def send_review_email_for_booking(booking: dict) -> bool:
         review_url=review_url,
         traveler_name=booking.get("user_name", "voyageur"),
     )
-    subject = "Comment s'est passé votre séjour avec Yendu ?"
+    subject = "Comment s'est passé votre séjour avec Yendou ?"
     await enqueue_notification(email, subject, html, type_="review_request", meta={"booking_id": booking["id"]})
     await db.bookings.update_one(
         {"id": booking["id"]},

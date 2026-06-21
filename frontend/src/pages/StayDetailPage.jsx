@@ -254,7 +254,7 @@ const StayDetailPage = () => {
                   <div className="flex justify-between text-[hsl(var(--primary))]"><span>Code {promo.code}</span><span>−{formatXOF(discount)}</span></div>
                 )}
                 <div className="flex justify-between pt-2 border-t border-border font-semibold text-base"><span>Total</span><span>{formatXOF(total)}</span></div>
-                <p className="text-xs text-muted-foreground pt-2">Paiement manuel — confirmation par l'équipe Yendu.</p>
+                <p className="text-xs text-muted-foreground pt-2">Paiement manuel — confirmation par l'équipe Yendou.</p>
               </div>
             )}
           </div>
