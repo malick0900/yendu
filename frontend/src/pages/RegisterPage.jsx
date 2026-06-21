@@ -31,7 +31,7 @@ const RegisterPage = () => {
     setError(''); setLoading(true);
     try {
       await registerEmail(form);
-      toast.success('Bienvenue chez Yendu !');
+      toast.success('Bienvenue chez Yendou !');
       navigate('/dashboard');
     } catch (e) {
       setError(e?.response?.data?.detail || 'Inscription impossible');
@@ -44,7 +44,7 @@ const RegisterPage = () => {
         <img src="/assets/register-hero.jpg" alt="Cérémonie du thé sur une plage du Sénégal au coucher du soleil" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 p-10 text-white">
-          <p className="text-xs uppercase tracking-[0.2em] text-[hsl(var(--premium))] font-semibold">Yendu</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-[hsl(var(--premium))] font-semibold">Yendou</p>
           <h2 className="font-display text-3xl mt-2 max-w-md">Créez votre compte et vivez le Sénégal autrement.</h2>
         </div>
       </div>

@@ -52,7 +52,7 @@ const LoginPage = () => {
         <img src="https://images.unsplash.com/photo-1716997338016-93b456b3ea8f?w=1400&auto=format&fit=crop" alt="Dakar" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 p-10 text-white">
-          <p className="text-xs uppercase tracking-[0.2em] text-[hsl(var(--premium))] font-semibold">Yendu</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-[hsl(var(--premium))] font-semibold">Yendou</p>
           <h2 className="font-display text-3xl mt-2 max-w-md">Reprenez votre voyage là où vous l’aviez laissé.</h2>
         </div>
       </div>

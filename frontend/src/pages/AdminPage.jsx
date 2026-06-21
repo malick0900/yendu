@@ -80,7 +80,7 @@ const AdminLayout = ({ children }) => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <h1 className="font-display text-3xl">Administration</h1>
-      <p className="text-sm text-muted-foreground">Gérez tout le contenu, les réservations et le site Yendu.</p>
+      <p className="text-sm text-muted-foreground">Gérez tout le contenu, les réservations et le site Yendou.</p>
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6">
         <aside className="rounded-2xl bg-white border border-border p-3 h-fit">
           <nav className="flex lg:flex-col gap-1 overflow-x-auto">
