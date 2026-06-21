@@ -14,7 +14,11 @@ from auth_utils import (
     get_current_user, require_admin, serialize_doc,
     create_review_token, decode_review_token,
 )
-from routes_site import enqueue_notification, _log_admin
+from routes_site import enqueue_notification, _log_admin, _contact_recipient
+from email_templates import (
+    booking_received, booking_confirmed, booking_cancelled,
+    payment_received, admin_new_booking,
+)
 
 router = APIRouter(prefix="/api", tags=["bookings"])
 
@@ -146,16 +150,17 @@ async def create_booking(payload: BookingCreate, request: Request):
     doc.pop("_id", None)  # Remove MongoDB ObjectId
     if promo_doc:
         await db.promo_codes.update_one({"id": promo_doc["id"]}, {"$inc": {"used_count": 1}})
-    # Notify
-    html = f"""
-    <h2>Merci pour votre réservation, {user.get('name')} !</h2>
-    <p>Nous avons bien reçu votre demande pour <strong>{title}</strong>.</p>
-    <p>Total : <strong>{total} FCFA</strong></p>
-    <p>Notre équipe va revenir vers vous très vite pour confirmer.</p>
-    <p style="color:#888">— L'équipe Yendou</p>
-    """
+    # Notify the traveler (branded acknowledgement)
     try:
-        await enqueue_notification(user["email"], "Votre réservation Yendou", html, type_="booking_created", meta={"booking_id": doc["id"]})
+        subj, html = booking_received(doc)
+        await enqueue_notification(doc["user_email"], subj, html, type_="booking_created", meta={"booking_id": doc["id"]})
+    except Exception:
+        pass
+    # Notify the admin of the new booking
+    try:
+        admin_to = await _contact_recipient()
+        asubj, ahtml = admin_new_booking(doc)
+        await enqueue_notification(admin_to, asubj, ahtml, type_="admin_new_booking", meta={"booking_id": doc["id"]}, reply_to=doc.get("user_email"))
     except Exception:
         pass
     return serialize_doc(doc)
@@ -193,14 +198,11 @@ async def update_booking_status(booking_id: str, payload: BookingStatusUpdate, r
         await _log_admin(admin, "update_booking", {"booking_id": booking_id, **update_data})
         subj = None; html = None
         if update_data.get("status") == "confirmed":
-            subj = "Réservation confirmée !"
-            html = f"<h2>Bonne nouvelle !</h2><p>Votre réservation pour <strong>{item.get('target_title')}</strong> est confirmée.</p>"
+            subj, html = booking_confirmed(item)
         elif update_data.get("status") == "cancelled":
-            subj = "Réservation annulée"
-            html = f"<p>Votre réservation pour <strong>{item.get('target_title')}</strong> a été annulée.</p>"
+            subj, html = booking_cancelled(item)
         elif update_data.get("payment_status") == "paid":
-            subj = "Paiement reçu — Merci !"
-            html = f"<p>Nous avons bien reçu votre paiement pour <strong>{item.get('target_title')}</strong>.</p>"
+            subj, html = payment_received(item)
         if subj and html and item.get("user_email"):
             await enqueue_notification(item["user_email"], subj, html, type_="booking_update", meta={"booking_id": booking_id, **update_data})
     except Exception:

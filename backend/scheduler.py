@@ -21,24 +21,9 @@ FROM_NAME = "Yendou"
 
 
 def _review_email_html(target_title: str, target_image: str | None, review_url: str, traveler_name: str) -> str:
-    img_html = ""
-    if target_image and target_image.startswith("http"):
-        img_html = f'<p><img src="{target_image}" alt="" style="max-width:100%;border-radius:12px"></p>'
-    return f"""\
-<!doctype html>
-<html><body style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;max-width:560px;margin:auto;padding:24px;color:#1a1a1a">
-  <h1 style="font-size:24px;margin:0 0 8px">Bonjour {traveler_name},</h1>
-  <p style="font-size:16px;line-height:1.5">Comment s'est passé votre expérience avec <strong>{target_title}</strong> ?</p>
-  {img_html}
-  <p style="font-size:16px;line-height:1.5">Votre avis aide les futurs voyageurs à choisir leur prochain séjour. Cela ne prend qu'une minute.</p>
-  <p style="text-align:center;margin:32px 0">
-    <a href="{review_url}" style="display:inline-block;background:#c25533;color:#fff;padding:14px 28px;border-radius:999px;text-decoration:none;font-weight:600">Laisser un avis</a>
-  </p>
-  <p style="font-size:12px;color:#888">Si le bouton ne fonctionne pas, copiez ce lien :<br><span style="word-break:break-all">{review_url}</span></p>
-  <hr style="border:none;border-top:1px solid #eee;margin:24px 0">
-  <p style="font-size:12px;color:#888;text-align:center">— L'équipe Yendou</p>
-</body></html>
-"""
+    # Delegate to the shared branded template.
+    from email_templates import review_request
+    return review_request(target_title, target_image, review_url, traveler_name)
 
 
 async def _candidate_bookings():
