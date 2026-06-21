@@ -276,14 +276,46 @@ async def public_availability(prop_id: str):
     return items
 
 
-# ---------- NOTIFICATIONS (in-DB log; SMTP optional) ----------
+# ---------- NOTIFICATIONS (in-DB log; Resend HTTP API or SMTP) ----------
 import os, smtplib
+import requests
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from starlette.concurrency import run_in_threadpool
 
 
 def _smtp_configured() -> bool:
     return bool(os.environ.get("SMTP_HOST")) and bool(os.environ.get("SMTP_USER"))
+
+
+def _resend_api_key() -> str:
+    """Resend API key, from RESEND_API_KEY or the Resend SMTP password fallback."""
+    key = os.environ.get("RESEND_API_KEY", "")
+    if key:
+        return key
+    if "resend" in os.environ.get("SMTP_HOST", "").lower():
+        return os.environ.get("SMTP_PASSWORD", "")
+    return ""
+
+
+def _resend_configured() -> bool:
+    return bool(_resend_api_key())
+
+
+def _send_resend_http(to_email: str, subject: str, html: str, reply_to: Optional[str] = None):
+    """Send via Resend's HTTPS API (avoids blocked outbound SMTP ports)."""
+    sender = os.environ.get("MAIL_FROM") or os.environ.get("SMTP_USER", "")
+    payload = {"from": sender, "to": [to_email], "subject": subject, "html": html}
+    if reply_to:
+        payload["reply_to"] = reply_to
+    resp = requests.post(
+        "https://api.resend.com/emails",
+        headers={"Authorization": f"Bearer {_resend_api_key()}", "Content-Type": "application/json"},
+        json=payload,
+        timeout=20,
+    )
+    if resp.status_code >= 300:
+        raise RuntimeError(f"Resend API {resp.status_code}: {resp.text[:200]}")
 
 
 def _send_smtp(to_email: str, subject: str, html: str, reply_to: Optional[str] = None):
@@ -309,7 +341,13 @@ async def enqueue_notification(to_email: str, subject: str, html: str, type_: st
     status = "queued"
     error: Optional[str] = None
     sent = False
-    if _smtp_configured():
+    if _resend_configured():
+        try:
+            await run_in_threadpool(_send_resend_http, to_email, subject, html, reply_to)
+            status = "sent"; sent = True
+        except Exception as e:
+            status = "failed"; error = str(e)[:300]
+    elif _smtp_configured():
         try:
             _send_smtp(to_email, subject, html, reply_to=reply_to)
             status = "sent"; sent = True
@@ -336,7 +374,11 @@ async def list_notifications(request: Request, limit: int = 100):
 @router.get("/admin/notifications/status")
 async def notif_status(request: Request):
     await require_admin(request, db)
-    return {"smtp_configured": _smtp_configured(), "from": os.environ.get("MAIL_FROM", "")}
+    return {
+        "resend_configured": _resend_configured(),
+        "smtp_configured": _smtp_configured(),
+        "from": os.environ.get("MAIL_FROM", ""),
+    }
 
 
 # ---------- PUBLIC CONTACT FORM ----------
