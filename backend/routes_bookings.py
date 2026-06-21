@@ -14,7 +14,7 @@ from auth_utils import (
     get_current_user, require_admin, serialize_doc,
     create_review_token, decode_review_token,
 )
-from routes_site import enqueue_notification, _log_admin, _contact_recipient
+from routes_site import enqueue_notification, _log_admin, _site_contact
 from email_templates import (
     booking_received, booking_confirmed, booking_cancelled,
     payment_received, admin_new_booking,
@@ -146,21 +146,22 @@ async def create_booking(payload: BookingCreate, request: Request):
     )
     doc = booking.model_dump()
     doc["created_at"] = doc["created_at"].isoformat()
+    doc["user_phone"] = user.get("phone")  # snapshot for emails
     await db.bookings.insert_one(doc)
     doc.pop("_id", None)  # Remove MongoDB ObjectId
     if promo_doc:
         await db.promo_codes.update_one({"id": promo_doc["id"]}, {"$inc": {"used_count": 1}})
-    # Notify the traveler (branded acknowledgement)
+    # Notify the traveler (branded acknowledgement) — `item` is the listing doc
+    contact = await _site_contact()
     try:
-        subj, html = booking_received(doc)
+        subj, html = booking_received(doc, listing=item, contact=contact)
         await enqueue_notification(doc["user_email"], subj, html, type_="booking_created", meta={"booking_id": doc["id"]})
     except Exception:
         pass
     # Notify the admin of the new booking
     try:
-        admin_to = await _contact_recipient()
-        asubj, ahtml = admin_new_booking(doc)
-        await enqueue_notification(admin_to, asubj, ahtml, type_="admin_new_booking", meta={"booking_id": doc["id"]}, reply_to=doc.get("user_email"))
+        asubj, ahtml = admin_new_booking(doc, listing=item)
+        await enqueue_notification(contact["email"], asubj, ahtml, type_="admin_new_booking", meta={"booking_id": doc["id"]}, reply_to=doc.get("user_email"))
     except Exception:
         pass
     return serialize_doc(doc)
@@ -196,13 +197,16 @@ async def update_booking_status(booking_id: str, payload: BookingStatusUpdate, r
     # Notify the traveler on status changes
     try:
         await _log_admin(admin, "update_booking", {"booking_id": booking_id, **update_data})
+        coll = db.properties if item.get("type") == "property" else db.experiences
+        listing = await coll.find_one({"id": item.get("target_id")}, {"_id": 0})
+        contact = await _site_contact()
         subj = None; html = None
         if update_data.get("status") == "confirmed":
-            subj, html = booking_confirmed(item)
+            subj, html = booking_confirmed(item, listing=listing, contact=contact)
         elif update_data.get("status") == "cancelled":
-            subj, html = booking_cancelled(item)
+            subj, html = booking_cancelled(item, listing=listing, contact=contact)
         elif update_data.get("payment_status") == "paid":
-            subj, html = payment_received(item)
+            subj, html = payment_received(item, listing=listing, contact=contact)
         if subj and html and item.get("user_email"):
             await enqueue_notification(item["user_email"], subj, html, type_="booking_update", meta={"booking_id": booking_id, **update_data})
     except Exception:

@@ -402,6 +402,17 @@ async def _contact_recipient() -> str:
     return content.get("contact_email") or DEFAULT_SITE_CONTENT["contact_email"]
 
 
+async def _site_contact() -> dict:
+    """Public contact details for emails (email/phone/address). CMS > defaults."""
+    doc = await db.site_content.find_one({"key": "main"}, {"_id": 0})
+    content = (doc or {}).get("content", {}) if doc else {}
+    return {
+        "email": await _contact_recipient(),
+        "phone": content.get("contact_phone") or DEFAULT_SITE_CONTENT.get("contact_phone", ""),
+        "address": content.get("contact_address") or DEFAULT_SITE_CONTENT.get("contact_address", ""),
+    }
+
+
 @router.post("/contact")
 async def submit_contact(payload: ContactMessage):
     name = payload.name.strip()
