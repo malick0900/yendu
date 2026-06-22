@@ -19,6 +19,8 @@ import { fr } from 'date-fns/locale';
 import L from 'leaflet';
 import { resolveImage } from '@/components/ImageUpload';
 import Seo, { SITE_URL } from '@/components/Seo';
+import ShareButton from '@/components/ShareButton';
+import { ExperienceCard } from '@/components/ExperienceCard';
 
 const markerIcon = L.divIcon({ className: 'ts-marker-wrap', html: '<div class="ts-marker ts-marker--active"><span class="ts-marker__dot"></span>Ici</div>', iconSize: [60, 32], iconAnchor: [30, 16] });
 
@@ -28,6 +30,7 @@ const StayDetailPage = () => {
   const { user } = useAuth();
   const [item, setItem] = useState(null);
   const [reviews, setReviews] = useState([]);
+  const [suggested, setSuggested] = useState([]);
   const [loading, setLoading] = useState(true);
   const [range, setRange] = useState({ from: undefined, to: undefined });
   const [guests, setGuests] = useState('2');
@@ -63,6 +66,15 @@ const StayDetailPage = () => {
       setFavored(r.data.some((f) => f.type === 'property' && f.target_id === id));
     });
   }, [user, id]);
+
+  // Suggest experiences in the same area to complete the stay
+  useEffect(() => {
+    const slug = item?.destination_slug;
+    if (!slug) { setSuggested([]); return; }
+    api.get('/experiences', { params: { destination: slug, limit: 6 } })
+      .then((r) => setSuggested((r.data || []).slice(0, 3)))
+      .catch(() => setSuggested([]));
+  }, [item?.destination_slug]);
 
   const [promoInput, setPromoInput] = useState('');
   const [promo, setPromo] = useState(null); // { code, discount_percent }
@@ -145,9 +157,12 @@ const StayDetailPage = () => {
         <span className="inline-flex items-center gap-1"><Star className="h-4 w-4 fill-foreground text-foreground" /> <strong className="text-foreground">{item.rating_avg?.toFixed(1) || '—'}</strong> ({item.rating_count} avis)</span>
         <span>·</span>
         <span className="inline-flex items-center gap-1"><MapPin className="h-4 w-4" /> {item.city}</span>
-        <button onClick={toggleFav} data-testid="stay-favorite-button" className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-white hover:bg-muted">
-          <Heart className={`h-4 w-4 ${favored ? 'fill-[hsl(var(--primary))] text-[hsl(var(--primary))]' : ''}`} /> {favored ? 'Sauvegardé' : 'Sauvegarder'}
-        </button>
+        <div className="ml-auto flex items-center gap-2">
+          <ShareButton url={`${SITE_URL}/stays/${id}`} title={item.title} subtitle={`${item.city || ''}${item.type ? ' · ' + item.type : ''}`} image={images[0]} />
+          <button onClick={toggleFav} data-testid="stay-favorite-button" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-white hover:bg-muted">
+            <Heart className={`h-4 w-4 ${favored ? 'fill-[hsl(var(--primary))] text-[hsl(var(--primary))]' : ''}`} /> {favored ? 'Sauvegardé' : 'Sauvegarder'}
+          </button>
+        </div>
       </div>
 
       {/* Gallery */}
@@ -273,6 +288,16 @@ const StayDetailPage = () => {
           </div>
         </aside>
       </div>
+
+      {suggested.length > 0 && (
+        <section className="mt-16" data-testid="stay-suggested-experiences">
+          <h2 className="font-display text-2xl">Expériences à proximité</h2>
+          <p className="text-sm text-muted-foreground mt-1">À vivre pendant votre séjour à {item.city}</p>
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {suggested.map((e) => <ExperienceCard key={e.id} item={e} />)}
+          </div>
+        </section>
+      )}
     </div>
   );
 };

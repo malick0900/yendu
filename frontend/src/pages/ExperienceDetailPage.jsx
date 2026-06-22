@@ -16,6 +16,7 @@ import { fr } from 'date-fns/locale';
 import { resolveImage } from '@/components/ImageUpload';
 import { PhotoGallery } from '@/components/PhotoGallery';
 import Seo, { SITE_URL } from '@/components/Seo';
+import ShareButton from '@/components/ShareButton';
 
 const ExperienceDetailPage = () => {
   const { id } = useParams();
@@ -108,9 +109,12 @@ const ExperienceDetailPage = () => {
         <span className="inline-flex items-center gap-1"><Star className="h-4 w-4 fill-foreground text-foreground" /> <strong className="text-foreground">{item.rating_avg?.toFixed(1) || '—'}</strong> ({item.rating_count} avis)</span>
         <span>·</span>
         <span className="inline-flex items-center gap-1"><MapPin className="h-4 w-4" /> {item.city}</span>
-        <button onClick={toggleFav} data-testid="exp-favorite-button" className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-white hover:bg-muted">
-          <Heart className={`h-4 w-4 ${favored ? 'fill-[hsl(var(--primary))] text-[hsl(var(--primary))]' : ''}`} /> {favored ? 'Sauvegardé' : 'Sauvegarder'}
-        </button>
+        <div className="ml-auto flex items-center gap-2">
+          <ShareButton url={`${SITE_URL}/experiences/${id}`} title={item.title} subtitle={`${item.city || ''}${cat ? ' · ' + cat.label : ''}`} image={(item.images || [])[0]} />
+          <button onClick={toggleFav} data-testid="exp-favorite-button" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-white hover:bg-muted">
+            <Heart className={`h-4 w-4 ${favored ? 'fill-[hsl(var(--primary))] text-[hsl(var(--primary))]' : ''}`} /> {favored ? 'Sauvegardé' : 'Sauvegarder'}
+          </button>
+        </div>
       </div>
 
       <PhotoGallery images={item.images || []} alt={item.title} className="mt-5 h-[300px] sm:h-[420px]" />
